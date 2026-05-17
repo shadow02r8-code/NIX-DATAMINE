@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIX データマイン まとめ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Rajdhani:wght@500;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08090d;--bg2:#0e1018;--bg3:#141620;--card:#111420;--border:rgba(120,140,255,0.12);--border-bright:rgba(120,140,255,0.35);--accent:#6c7fff;--accent2:#a78bfa;--accent3:#38bdf8;--gold:#f0b429;--red:#f87171;--green:#34d399;--text:#e2e4f0;--text2:#8b90b0;--text3:#555a7a;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-weight:300;line-height:1.7;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(108,127,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(108,127,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.page{display:none;position:relative;z-index:1;}
+.page.active{display:block;}
+header{position:relative;z-index:10;padding:4rem 2rem 3rem;text-align:center;border-bottom:1px solid var(--border);overflow:hidden;}
+header::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:60%;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.glow-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.15;pointer-events:none;}
+.orb1{width:500px;height:500px;background:var(--accent);top:-200px;left:-100px;}
+.orb2{width:400px;height:400px;background:var(--accent2);top:-150px;right:-100px;}
+.eyebrow{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:500;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:0.75rem;}
+h1{font-family:'Orbitron',monospace;font-size:clamp(2rem,6vw,3.5rem);font-weight:900;background:linear-gradient(135deg,#fff 0%,var(--accent) 50%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.subtitle{margin-top:0.75rem;font-size:13px;color:var(--text2);letter-spacing:1px;}
+.header-stats{display:flex;justify-content:center;gap:2.5rem;margin-top:2rem;flex-wrap:wrap;}
+.hstat{text-align:center;}
+.hstat-num{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:700;color:var(--accent);}
+.hstat-label{font-size:11px;color:var(--text2);letter-spacing:1px;margin-top:2px;}
+nav{position:sticky;top:0;z-index:100;background:rgba(8,9,13,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 1rem;display:flex;gap:0;overflow-x:auto;}
+nav a{display:block;padding:0.875rem 1rem;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;text-decoration:none;color:var(--text2);white-space:nowrap;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;cursor:pointer;}
+nav a:hover,nav a.active-nav{color:var(--accent);border-bottom-color:var(--accent);}
+main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;}
+section{margin-bottom:3.5rem;}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.section-icon{width:34px;height:34px;background:rgba(108,127,255,0.1);border:1px solid var(--border-bright);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.section-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);}
+.section-count{margin-left:auto;font-family:'Orbitron',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.75rem;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:border-color 0.2s,transform 0.2s;position:relative;overflow:hidden;}
+.card:hover{border-color:var(--border-bright);transform:translateY(-2px);}
+.card-tag{display:inline-flex;align-items:center;gap:4px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;border-radius:4px;margin-bottom:0.75rem;}
+.tag-new{background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.25);}
+.tag-boss{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.25);}
+.tag-weapon{background:rgba(108,127,255,0.1);color:var(--accent);border:1px solid var(--border-bright);}
+.tag-item{background:rgba(240,180,41,0.1);color:var(--gold);border:1px solid rgba(240,180,41,0.25);}
+.tag-story{background:rgba(167,139,250,0.1);color:var(--accent2);border:1px solid rgba(167,139,250,0.25);}
+.card h3{font-size:15px;font-weight:500;margin-bottom:0.5rem;color:#fff;}
+.card p{font-size:13px;color:var(--text2);line-height:1.7;}
+.weapon-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1rem;text-align:center;transition:border-color 0.2s,transform 0.2s,background 0.2s;cursor:pointer;}
+.weapon-card:hover{border-color:var(--accent);transform:translateY(-3px);background:rgba(108,127,255,0.05);}
+.weapon-icon{font-size:2rem;margin-bottom:0.5rem;}
+.weapon-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;color:#fff;}
+.weapon-en{font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:2px;}
+.weapon-count{font-family:'Orbitron',monospace;font-size:11px;color:var(--accent);margin-top:6px;}
+.weapon-tap{font-size:11px;color:var(--text3);margin-top:4px;}
+.back-btn{display:inline-flex;align-items:center;gap:8px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--text2);cursor:pointer;padding:0.6rem 1rem;border:1px solid var(--border);border-radius:8px;margin-bottom:1.5rem;transition:color 0.2s,border-color 0.2s;}
+.back-btn:hover{color:var(--accent);border-color:var(--accent);}
+.detail-weapon-icon{font-size:3rem;margin-bottom:0.5rem;}
+.detail-title{font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:0.5rem;}
+.detail-sub{font-size:14px;color:var(--text2);margin-bottom:2rem;}
+.skill-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 12px 12px 0;padding:1.25rem 1.5rem;margin-bottom:0.75rem;transition:border-left-color 0.2s,border-color 0.2s;}
+.skill-card:hover{border-left-color:var(--accent2);border-color:var(--border-bright);}
+.skill-card-name{font-size:15px;font-weight:500;color:#fff;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.skill-badge{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:4px;}
+.badge-gear{background:rgba(240,180,41,0.1);color:var(--gold);border:1px solid rgba(240,180,41,0.2);}
+.badge-nix{background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2);}
+.badge-base{background:rgba(108,127,255,0.1);color:var(--accent);border:1px solid var(--border-bright);}
+.skill-card-desc{font-size:13px;color:var(--text2);line-height:1.8;white-space:pre-line;}
+.boss-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:border-color 0.2s;}
+.boss-card:hover{border-color:rgba(248,113,113,0.35);}
+.boss-name{font-size:16px;font-weight:500;color:#fff;margin-bottom:6px;}
+.boss-type{font-size:12px;color:var(--text2);margin-bottom:8px;}
+.boss-modes{display:flex;flex-wrap:wrap;gap:4px;}
+.boss-mode-badge{font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(248,113,113,0.08);color:var(--red);border:1px solid rgba(248,113,113,0.2);}
+.area-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.area-badge{font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;color:var(--text2);background:var(--card);transition:border-color 0.2s,color 0.2s;}
+.area-badge:hover{border-color:var(--accent3);color:var(--accent3);}
+.step-list{position:relative;padding-left:1.5rem;}
+.step-list::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--accent),transparent);}
+.step-item{position:relative;padding:0.5rem 0 0.5rem 1rem;font-size:13px;color:var(--text2);line-height:1.6;}
+.step-item::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--bg3);border:1px solid var(--accent);}
+.achv-item{display:flex;align-items:flex-start;gap:10px;padding:0.75rem 0;border-bottom:1px solid var(--border);}
+.achv-item:last-child{border-bottom:none;}
+.achv-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:9px;}
+.achv-text{font-size:13px;color:var(--text2);}
+.story-card{background:linear-gradient(135deg,rgba(167,139,250,0.05),rgba(108,127,255,0.05));border:1px solid rgba(167,139,250,0.2);border-radius:12px;padding:1.5rem;}
+.story-card p{font-size:14px;color:var(--text2);line-height:1.8;}
+.memory-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;}
+.memory-item{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;color:var(--text2);background:var(--card);display:flex;align-items:center;gap:6px;transition:border-color 0.2s;}
+.memory-item:hover{border-color:var(--gold);}
+.memory-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+.rune-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;}
+.rune-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center;}
+.rune-type{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;margin-bottom:4px;}
+.rune-atk{color:var(--red);}.rune-def{color:var(--accent3);}.rune-sup{color:var(--green);}
+.rune-slots{font-size:11px;color:var(--text2);}
+footer{position:relative;z-index:1;text-align:center;padding:2.5rem 2rem;border-top:1px solid var(--border);font-size:12px;color:var(--text3);}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:2px;}
+@media(max-width:600px){.header-stats{gap:1.25rem;}.hstat-num{font-size:1.4rem;}nav a{padding:0.7rem 0.75rem;font-size:11px;}.rune-grid{grid-template-columns:repeat(2,1fr);}.grid4{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<header>
+  <div class="glow-orb orb1"></div>
+  <div class="glow-orb orb2"></div>
+  <p class="eyebrow">Game Data Mining Report</p>
+  <h1>NIX DATAMINE</h1>
+  <p class="subtitle">データマイニング 完全日本語まとめ ／ 2026年5月</p>
+  <div class="header-stats">
+    <div class="hstat"><div class="hstat-num">4,392</div><div class="hstat-label">総データ数</div></div>
+    <div class="hstat"><div class="hstat-num">56+</div><div class="hstat-label">スキル情報</div></div>
+    <div class="hstat"><div class="hstat-num">8</div><div class="hstat-label">武器タイプ</div></div>
+    <div class="hstat"><div class="hstat-num">30+</div><div class="hstat-label">エリア</div></div>
+  </div>
+</header>
+<nav>
+  <a onclick="showPage('home')" class="active-nav" id="nav-home">トップ</a>
+  <a onclick="showPage('new')" id="nav-new">新コンテンツ</a>
+  <a onclick="showPage('weapons')" id="nav-weapons">武器・スキル</a>
+  <a onclick="showPage('bosses')" id="nav-bosses">ボス</a>
+  <a onclick="showPage('areas')" id="nav-areas">マップ</a>
+  <a onclick="showPage('dungeon')" id="nav-dungeon">ダンジョン</a>
+  <a onclick="showPage('items')" id="nav-items">アイテム</a>
+  <a onclick="showPage('achievement')" id="nav-achievement">実績</a>
+  <a onclick="showPage('story')" id="nav-story">ストーリー</a>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page active"><main><section>
+  <div class="section-header"><div class="section-icon">📋</div><span class="section-title">概要</span></div>
+  <div class="grid2">
+    <div class="card" style="cursor:pointer" onclick="showPage('new')"><div class="card-tag tag-new">NEW</div><h3>✦ 新コンテンツ</h3><p>Stellar Journey・L17ダンジョン・ルーン拡張など。</p><p style="margin-top:8px;color:var(--accent);font-size:12px;">詳細を見る →</p></div>
+    <div class="card" style="cursor:pointer" onclick="showPage('weapons')"><div class="card-tag tag-weapon">SKILLS</div><h3>⚔ 武器・スキル</h3><p>8種の武器ごとに全スキルを日本語で解説。武器カードをタップで詳細へ。</p><p style="margin-top:8px;color:var(--accent);font-size:12px;">詳細を見る →</p></div>
+    <div class="card" style="cursor:pointer" onclick="showPage('bosses')"><div class="card-tag tag-boss">BOSS</div><h3>💀 ボス情報</h3><p>Ascended Pakilo Naru・Leviathan・Daigonなど新ボスの詳細。</p><p style="margin-top:8px;color:var(--accent);font-size:12px;">詳細を見る →</p></div>
+    <div class="card" style="cursor:pointer" onclick="showPage('areas')"><div class="card-tag tag-item">MAP</div><h3>🗺 マップ・エリア</h3><p>新エリア26か所以上を一覧。Frozen Nightlandsなど。</p><p style="margin-top:8px;color:var(--accent);font-size:12px;">詳細を見る →</p></div>
+    <div class="card" style="cursor:pointer" onclick="showPage('dungeon')"><div class="card-tag tag-new">DUNGEON</div><h3>🏛 ダンジョン（L17）</h3><p>Starlight Observatoryの多彩なギミックを解説。</p><p style="margin-top:8px;color:var(--accent);font-size:12px;">詳細を見る →</p></div>
+    <div class="card" style="cursor:pointer" onclick="showPage('story')"><div class="card-tag tag-story">STORY</div><h3>📖 ストーリー（Season 2）</h3><p>BennyやLottieなどのNPCと共にTemple of Sylavethを探索。</p><p style="margin-top:8px;color:var(--accent);font-size:12px;">詳細を見る →</p></div>
+  </div>
+</section></main></div>
+
+<!-- NEW CONTENT -->
+<div id="page-new" class="page"><main><section>
+  <div class="section-header"><div class="section-icon">✦</div><span class="section-title">新コンテンツ</span></div>
+  <div class="grid2">
+    <div class="card"><div class="card-tag tag-new">NEW</div><h3>⭐ Stellar Journey（ステラージャーニー）</h3><p>新コンテンツシステム。<strong style="color:#fff">Adventure / Exploration / Singularity / Relic Fishing</strong>の4カテゴリ構成。各地域の「Starry Memory」を集めるとステータスが上昇する。コーデックス完了で報酬チェストを獲得。</p><div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;"><span style="font-size:11px;background:rgba(240,180,41,0.1);color:var(--gold);border:1px solid rgba(240,180,41,0.2);padding:2px 8px;border-radius:4px;">Adventure 1・2・3</span><span style="font-size:11px;background:rgba(240,180,41,0.1);color:var(--gold);border:1px solid rgba(240,180,41,0.2);padding:2px 8px;border-radius:4px;">Exploration</span><span style="font-size:11px;background:rgba(240,180,41,0.1);color:var(--gold);border:1px solid rgba(240,180,41,0.2);padding:2px 8px;border-radius:4px;">Singularity</span><span style="font-size:11px;background:rgba(240,180,41,0.1);color:var(--gold);border:1px solid rgba(240,180,41,0.2);padding:2px 8px;border-radius:4px;">Relic Fishing</span></div></div>
+    <div class="card"><div class="card-tag tag-new">NEW</div><h3>🏛 Starlight Observatory（L17ダンジョン）</h3><p>新ダンジョン系コンテンツ。水を使った消火・時間制限ルート・ゾンビ回避・鐘を鳴らすなど多様なギミックが搭載。Stardust収集→Relic Chest開放の流れで攻略する。</p></div>
+    <div class="card"><div class="card-tag tag-new">拡張</div><h3>💎 ルーンシステム拡張</h3><p>全装備部位（Headpiece / Armor / Hands / Legs / Feet / Cloak）にAttack / Defense / Supportの3種ルーンスロットが追加。180件超のデータが確認されている。</p></div>
+    <div class="card"><div class="card-tag tag-item">報酬</div><h3>📦 Exploration Codex 報酬チェスト</h3><p>各エリアのExploration Codex達成で「Selectable Chest」を入手。Forgotten Islandには「Star-Born」チェストが存在。</p></div>
+  </div>
+</section></main></div>
+
+<!-- WEAPONS LIST -->
+<div id="page-weapons" class="page"><main><section>
+  <div class="section-header"><div class="section-icon">⚔</div><span class="section-title">武器・スキル一覧</span><span class="section-count">タップで詳細へ</span></div>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">各武器カードをタップすると全スキルの詳細が表示されます。</p>
+  <div class="grid4">
+    <div class="weapon-card" onclick="showWeapon('bow')"><div class="weapon-icon">🏹</div><div class="weapon-name">ボウ</div><div class="weapon-en">BOW</div><div class="weapon-count">7スキル</div><div class="weapon-tap">タップで詳細 →</div></div>
+    <div class="weapon-card" onclick="showWeapon('staff')"><div class="weapon-icon">🪄</div><div class="weapon-name">スタッフ</div><div class="weapon-en">STAFF</div><div class="weapon-count">11スキル</div><div class="weapon-tap">タップで詳細 →</div></div>
+    <div class="weapon-card" onclick="showWeapon('wand')"><div class="weapon-icon">✨</div><div class="weapon-name">ワンド</div><div class="weapon-en">WAND</div><div class="weapon-count">7スキル</div><div class="weapon-tap">タップで詳細 →</div></div>
+    <div class="weapon-card" onclick="showWeapon('nix')"><div class="weapon-icon">🌟</div><div class="weapon-name">NIXスキル</div><div class="weapon-en">NIX ITEMS</div><div class="weapon-count">15スキル</div><div class="weapon-tap">タップで詳細 →</div></div>
+    <div class="weapon-card" onclick="showWeapon('bow-enchant')"><div class="weapon-icon">🏹💫</div><div class="weapon-name">ボウ エンチャント</div><div class="weapon-en">BOW ENCHANTS</div><div class="weapon-count">6エンチャント</div><div class="weapon-tap">タップで詳細 →</div></div>
+    <div class="weapon-card" onclick="showWeapon('staff-enchant')"><div class="weapon-icon">🪄💫</div><div class="weapon-name">スタッフ エンチャント</div><div class="weapon-en">STAFF ENCHANTS</div><div class="weapon-count">6エンチャント</div><div class="weapon-tap">タップで詳細 →</div></div>
+    <div class="weapon-card" onclick="showWeapon('wand-enchant')"><div class="weapon-icon">✨💫</div><div class="weapon-name">ワンド エンチャント</div><div class="weapon-en">WAND ENCHANTS</div><div class="weapon-count">6エンチャント</div><div class="weapon-tap">タップで詳細 →</div></div>
+    <div class="weapon-card" onclick="showWeapon('mastery')"><div class="weapon-icon">⚡</div><div class="weapon-name">共通マスタリー</div><div class="weapon-en">WEAPON MASTERY</div><div class="weapon-count">2スキル</div><div class="weapon-tap">タップで詳細 →</div></div>
+  </div>
+</section></main></div>
+
+<!-- WEAPON DETAIL -->
+<div id="page-weapon-detail" class="page"><main>
+  <div class="back-btn" onclick="showPage('weapons')">← 武器一覧に戻る</div>
+  <div style="margin-bottom:2rem;">
+    <div class="detail-weapon-icon" id="detail-icon"></div>
+    <div class="detail-title" id="detail-title"></div>
+    <div class="detail-sub" id="detail-sub"></div>
+  </div>
+  <div id="detail-skills"></div>
+</main></div>
+
+<!-- BOSSES -->
+<div id="page-bosses" class="page"><main><section>
+  <div class="section-header"><div class="section-icon">💀</div><span class="section-title">ボス・フィールドイベント</span></div>
+  <div class="grid2">
+    <div class="boss-card"><div class="card-tag tag-boss">ASCENDED BOSS</div><div class="boss-name">Ascended Pakilo Naru</div><div class="boss-type">狂気の司令官（覚醒） — Commander of Madness: Ascended</div><div class="boss-modes"><span class="boss-mode-badge">Dominion Event</span><span class="boss-mode-badge">Peace</span><span class="boss-mode-badge">Guild</span><span class="boss-mode-badge">Inter-Server</span></div></div>
+    <div class="boss-card"><div class="card-tag tag-boss">ASCENDED BOSS</div><div class="boss-name">Ascended Leviathan</div><div class="boss-type">Abyssal Meteorで海底に眠っていた巨大サメ。地震で目覚めた。</div><div class="boss-modes"><span class="boss-mode-badge">Dominion Event</span><span class="boss-mode-badge">Peace</span><span class="boss-mode-badge">Guild</span><span class="boss-mode-badge">Inter-Server</span></div></div>
+    <div class="boss-card"><div class="card-tag tag-boss">ASCENDED BOSS</div><div class="boss-name">Ascended Daigon</div><div class="boss-type">Commander of Madness: Ascended シリーズの一体。</div><div class="boss-modes"><span class="boss-mode-badge">Dominion Event</span></div></div>
+    <div class="boss-card"><div class="card-tag tag-boss">FIELD BOSS</div><div class="boss-name">Field Boss: Porfos &amp; Thuban</div><div class="boss-type">Nixエリアのフィールドボス。両方討伐で「Nixian Boss Expert」実績解除。</div><div class="boss-modes"><span class="boss-mode-badge">Field</span><span class="boss-mode-badge">Elite</span></div></div>
+  </div>
+  <div class="card" style="margin-top:1rem;"><p style="font-size:13px;color:var(--text2);">全ボスに <strong style="color:#fff">Dominion Event / Peace / Guild / Inter-Server</strong> の複数モードあり。討伐への貢献度（Contribution %）システムも存在。</p></div>
+</section></main></div>
+
+<!-- AREAS -->
+<div id="page-areas" class="page"><main><section>
+  <div class="section-header"><div class="section-icon">🗺</div><span class="section-title">マップ・エリア一覧</span></div>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">新たに確認されたエリア・地名一覧（L13エリア含む）</p>
+  <div class="area-grid">
+    <span class="area-badge">❄ Frozen Nightlands</span><span class="area-badge">🌀 Entropic Tundra</span><span class="area-badge">🌑 Tumgir Hollow</span><span class="area-badge">🌫 Stillreach</span><span class="area-badge">🏰 Frontier Hold</span><span class="area-badge">🌾 Golden Rye Pastures</span><span class="area-badge">🌊 Windhill Shores</span><span class="area-badge">🌲 Blackhowl Plains</span><span class="area-badge">🏜 Moonlight Desert</span><span class="area-badge">🐛 Sandworm Lair</span><span class="area-badge">🗿 Monolith Wastelands</span><span class="area-badge">🏚 Abandoned Stonemason Town</span><span class="area-badge">🌅 Daybreak Shore</span><span class="area-badge">🌿 Carmine Forest</span><span class="area-badge">🏔 The Raging Wilds</span><span class="area-badge">⚗ Manawastes</span><span class="area-badge">🪨 Urstella Fields</span><span class="area-badge">🌿 Nesting Grounds</span><span class="area-badge">🕳 Syleus's Abyss</span><span class="area-badge">🌑 Shadowed Crypt</span><span class="area-badge">💎 Purelight Hill</span><span class="area-badge">🏛 Ruins of Turayne</span><span class="area-badge">⛩ Shattered Temple</span><span class="area-badge">🌟 Fonos Basin</span><span class="area-badge">🌄 Purelight Tower</span><span class="area-badge">🌙 Starlight Observatory Ruins</span>
+  </div>
+</section></main></div>
+
+<!-- DUNGEON -->
+<div id="page-dungeon" class="page"><main><section>
+  <div class="section-header"><div class="section-icon">🏛</div><span class="section-title">Starlight Observatory（L17ダンジョン）</span></div>
+  <div class="grid2">
+    <div><p style="font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:2px;color:var(--accent);margin-bottom:0.75rem;">DUNGEON MECHANICS</p><div class="step-list"><div class="step-item">薬草部屋の火を水で消す</div><div class="step-item">水に触れずに制限時間内でルートを進む</div><div class="step-item">Stardust（星塵）を集めてRelic Chestを開ける</div><div class="step-item">Starlight Observatory廃墟でフラッグを発見・チェストを開く</div><div class="step-item">東の観測所で水を使い火を消す</div><div class="step-item">オークに攻撃されず制限時間でルートを進む</div><div class="step-item">ゾンビに攻撃されずに鐘楼のベルを全て鳴らす</div><div class="step-item">出現したモンスターを全て倒す</div></div></div>
+    <div><div class="card" style="margin-bottom:0.75rem;"><div class="card-tag tag-new">難易度</div><h3>L02 / L03 / L04</h3><p>3段階の難易度別データが存在。段階が上がるにつれギミックの複雑さが増す。</p></div><div class="card"><div class="card-tag tag-new">HIGHLIGHT</div><h3>多彩なギミック設計</h3><p>水・炎・ステルス移動・時間制限・収集など従来のダンジョンとは異なる新しい要素が多数搭載されている。</p></div></div>
+  </div>
+</section></main></div>
+
+<!-- ITEMS -->
+<div id="page-items" class="page"><main><section>
+  <div class="section-header"><div class="section-icon">💎</div><span class="section-title">アイテム・ルーンシステム</span></div>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:0.75rem;">装備部位別ルーンスロット</p>
+  <div class="rune-grid" style="margin-bottom:1.5rem;"><div class="rune-card"><div class="rune-type rune-atk">Attack Rune</div><div class="rune-slots">攻撃力強化ルーン<br>全部位対応</div></div><div class="rune-card"><div class="rune-type rune-def">Defense Rune</div><div class="rune-slots">防御力強化ルーン<br>全部位対応</div></div><div class="rune-card"><div class="rune-type rune-sup">Support Rune</div><div class="rune-slots">サポート強化ルーン<br>全部位対応</div></div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.5rem;"><span style="font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;color:var(--text2);background:var(--card);">🪖 Headpiece</span><span style="font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;color:var(--text2);background:var(--card);">🛡 Armor</span><span style="font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;color:var(--text2);background:var(--card);">🧤 Hands</span><span style="font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;color:var(--text2);background:var(--card);">👖 Legs</span><span style="font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;color:var(--text2);background:var(--card);">👢 Feet</span><span style="font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;color:var(--text2);background:var(--card);">🧥 Cloak</span></div>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:0.75rem;">Starry Memory（星の記憶）— エリア別収集アイテム</p>
+  <div class="memory-grid"><div class="memory-item"><div class="memory-dot"></div>Golden Rye Pastures</div><div class="memory-item"><div class="memory-dot"></div>Windhill Shores</div><div class="memory-item"><div class="memory-dot"></div>Blackhowl Plains</div><div class="memory-item"><div class="memory-dot"></div>Urstella Fields</div><div class="memory-item"><div class="memory-dot"></div>Carmine Forest</div><div class="memory-item"><div class="memory-dot"></div>Nesting Grounds</div><div class="memory-item"><div class="memory-dot"></div>Fonos Basin</div><div class="memory-item"><div class="memory-dot"></div>Ruins of Turayne</div><div class="memory-item"><div class="memory-dot"></div>Purelight Hill</div><div class="memory-item"><div class="memory-dot"></div>Shattered Temple</div><div class="memory-item"><div class="memory-dot"></div>Syleus's Abyss</div><div class="memory-item"><div class="memory-dot"></div>Shadowed Crypt</div><div class="memory-item"><div class="memory-dot"></div>Monolith Wastelands</div><div class="memory-item"><div class="memory-dot"></div>Abandoned Stonemason Town</div><div class="memory-item"><div class="memory-dot"></div>Moonlight Desert</div><div class="memory-item"><div class="memory-dot"></div>Sandworm Lair</div><div class="memory-item"><div class="memory-dot"></div>Daybreak Shore</div><div class="memory-item"><div class="memory-dot"></div>Forgotten Island（Star-Born）</div></div>
+</section></main></div>
+
+<!-- ACHIEVEMENT -->
+<div id="page-achievement" class="page"><main><section>
+  <div class="section-header"><div class="section-icon">🏆</div><span class="section-title">実績・コレクション</span><span class="section-count">61 ENTRIES</span></div>
+  <div class="grid2">
+    <div class="card"><div class="card-tag tag-boss">COMBAT</div><h3>戦闘系実績</h3><div class="achv-item"><div class="achv-dot"></div><div class="achv-text"><strong style="color:#fff">Nixian Boss Expert</strong><br>Nixの全フィールドボス（Porfos・Thuban）を討伐する</div></div><div class="achv-item"><div class="achv-dot"></div><div class="achv-text"><strong style="color:#fff">Nixian Elite Monster Expert</strong><br>Nixの全エリートモンスターを討伐する</div></div><div class="achv-item"><div class="achv-dot"></div><div class="achv-text"><strong style="color:#fff">Abyss within the Nixian Abyss</strong><br>Abyssal Contract Tokenポイントを消費する（累計系実績）</div></div></div>
+    <div class="card"><div class="card-tag tag-item">COLLECTION</div><h3>収集・探索系実績</h3><div class="achv-item"><div class="achv-dot" style="background:var(--accent3)"></div><div class="achv-text"><strong style="color:#fff">Red ball... You again?</strong><br>Nix全地域のMystic Globeに触れる</div></div><div class="achv-item"><div class="achv-dot" style="background:var(--accent3)"></div><div class="achv-text"><strong style="color:#fff">フォトコレクション（4種）</strong><br>Whispie・Layzee・Goldie・Roarieをそれぞれ撮影する</div></div></div>
+  </div>
+</section></main></div>
+
+<!-- STORY -->
+<div id="page-story" class="page"><main><section>
+  <div class="section-header"><div class="section-icon">📖</div><span class="section-title">ストーリー概要（Season 2）</span></div>
+  <div class="story-card">
+    <p>メインクエスト「AD_S2」シリーズのデータが多数確認されている。<strong style="color:var(--accent2)">Benny</strong>というNPCが重要な役割を担っており、プレイヤーと共に<strong style="color:#fff">Temple of Sylaveth Basement</strong>や<strong style="color:#fff">Purelight Tower Library</strong>を探索するシーンが存在する。</p>
+    <p style="margin-top:12px;">「<strong style="color:#fff">Star Fragment（星の欠片）</strong>」の力を使って魔法陣を解除したり、敵の群れを突破するシーンが確認されており、星・宇宙・古代遺跡をテーマにしたナラティブが展開されると予測される。</p>
+    <p style="margin-top:12px;">Season 2の登場NPC：<strong style="color:var(--accent2)">Lottie / Lyru / Chesner Boxx / Porfiry</strong>などの名前もデータに含まれている。</p>
+  </div>
+</section></main></div>
+
+<footer><p>NIX Datamine まとめ ／ データソース: 8_flat_all.json（4,392件）</p><p style="margin-top:4px;">本ページはデータマイニング情報であり、正式リリース時に変更される可能性があります。</p></footer>
+
+<script>
+const WEAPONS = {
+  bow:{icon:'🏹',name:'Bow（ボウ）',sub:'弓系武器 — 7スキル',skills:[
+    {name:'Pierce Shot（貫通射撃）',badge:'base',badgeText:'BASE',desc:'Weaken: Pierce Shotを一定秒間付与。基礎ダメージのX%＋X ダメージを毎秒与え、対象の回復量をX%減少させる。'},
+    {name:'Infinite Strafing（無限乱射）',badge:'gear',badgeText:'GEAR',desc:'Strafingをトグルスキルに変化。中断なしで矢を連射し続ける。\n・マナの基本消費が減少\n・矢を撃つたびにマナコストが増加\n・Specialization 2「Directional Tempest」・3「Consecutive Use」には非適用'},
+    {name:'Triple Snipe（トリプルスナイプ）',badge:'gear',badgeText:'GEAR',desc:'Decisive Snipingが移動スキルに変化し、最大3回連続使用が可能。ダメージは基礎ダメージのX%＋X。\n・Spec1「Increased Charging Time」\n・Spec3「Decreased Charging Time」\n・Spec4「Directional Tempest」には非適用'},
+    {name:"Wind God's Snipe（風神の狙撃）",badge:'gear',badgeText:'GEAR',desc:"Decisive Snipingの矢が通過した1秒後に衝撃波が発生し、基礎ダメージのX%＋X ダメージを3回与える。\n・PvPダメージ減少\n・対モンスターダメージ増加"},
+    {name:'Torrent（濁流）',badge:'gear',badgeText:'GEAR',desc:"Whirlpool上にいる間、StrafingとZephyr's Nockのダメージは減少するが、最大6体の敵を同時に攻撃できるAoEスキルに変化。\n・Strafing: 基礎ダメージのX%＋X\n・Zephyr's Nock: 基礎ダメージのX%＋X\n・PvPダメージ減少、対モンスターダメージ増加"},
+    {name:'Eagle Eye（鷹の目）',badge:'gear',badgeText:'GEAR',desc:"Strafingで命中した敵に、BullseyeとGaleをそれぞれ1スタックずつ追加する。"},
+    {name:'Double Shot（ダブルショット）',badge:'base',badgeText:'BASE',desc:'直前に使用したスキルのCDをリセット。対応スキル使用後にのみ使用可能。\n\nCDリセット不可スキル:\nImmortal Pride / Devastating Smash / Frost Smokescreen / Judgment Lightning / Strafing / Arrow Vortex / Death From Above / Fountain of Life / Star Destroyer / Time Dilation / Echoes of Distortion'},
+  ]},
+  staff:{icon:'🪄',name:'Staff（スタッフ）',sub:'杖系武器 — 11スキル',skills:[
+    {name:'Elemental Awakening（元素覚醒）',badge:'base',badgeText:'BASE',desc:'スタッフスキルで敵を攻撃し、一定数のElementalスタックを蓄積すると発動。Species Damage Boostが増加し、残りの元素スタックも処理される。'},
+    {name:'Elemental Fusion（元素融合）',badge:'nix',badgeText:'NIX',desc:'Elemental AwakeningをElemental Fusionに変化させる。2種類の元素条件を同時に満たした時に特殊スキルが発動。\n・火5個＋氷2個 → Frost Smokescreen特殊発動\n・その他の組み合わせも有効'},
+    {name:'Ice Mist（氷の霧）',badge:'gear',badgeText:'GEAR',desc:'Frost Smokescreen範囲内に霜の霧が覆い、範囲内で1回のステルスを付与。ステルスが解除されるか範囲外に出て再入場した場合、ステルスは再度付与されない。'},
+    {name:'Icebound Explosion（氷縛爆発）',badge:'gear',badgeText:'GEAR',desc:'Frost SmokescreenがMovement Speed ReducionとWeaken: Frostbiteを付与した際、単体に基礎ダメージのX%＋X ダメージを与える。Weaken: Frostbite付与時には追加で範囲ダメージも発生。'},
+    {name:'Absolute Zero（絶対零度）',badge:'gear',badgeText:'GEAR',desc:'Frost Smokescreenの範囲を6m半径に拡大し、0.5秒ごとにX秒間Weaken: Frostbiteを付与する。Movement Speed Reductionの効果も増加。'},
+    {name:'Thunder Shadow（雷影）',badge:'gear',badgeText:'GEAR',desc:"Thunder's BlessingがThunder Shadowに変化。敵ターゲットを追跡し、落雷命中時にWeaken: Thundercloudsを付与する。"},
+    {name:'Lightning Condensation（雷光凝縮）',badge:'gear',badgeText:'GEAR',desc:'落雷の半径を2.5mに縮小するが、ダメージが基礎ダメージのX%に調整され、さらにWeaken: Thundercloudsのスタック数に比例した追加ダメージを与える。'},
+    {name:'Thunderclouds Explosion（雷雲爆発）',badge:'gear',badgeText:'GEAR',desc:'落雷の頻度を毎秒2回に減少させるが、各落雷が最大3体の敵に基礎ダメージのX%の範囲ダメージを与えるように変化する。'},
+    {name:'Lava Dust（溶岩の塵）',badge:'base',badgeText:'BASE',desc:'範囲内の敵に毎秒基礎ダメージのX%＋X ダメージを与えるエリアを生成し、X秒間Weaken: Lava Dustを付与する。'},
+    {name:'Magnetic Field（磁場）',badge:'base',badgeText:'BASE',desc:'敵に雷ダメージを与えるMagnetic Fieldを生成し、Weaken: Magnetic FieldでMovement Speedを減少させる。'},
+    {name:'Firestorm（炎嵐）',badge:'base',badgeText:'BASE',desc:'対象の敵をX秒間追いかけるFirestormを召喚。基礎ダメージのX%＋X ダメージを与えWeaken: Burningを付与する。'},
+  ]},
+  wand:{icon:'✨',name:'Wand（ワンド）',sub:'ワンド系武器 — 7スキル',skills:[
+    {name:'Nightmare Melody（悪夢の旋律）',badge:'gear',badgeText:'GEAR',desc:'Sleep: Cursed Nightmare効果をSleep: Nightmare Melodyに変化させる。Nightmare Melodyは毎秒基礎ダメージのX%＋X ダメージを与え、追加デバフも付与する。'},
+    {name:'Nightmare Conductor（悪夢の指揮者）',badge:'nix',badgeText:'NIX',desc:'Sleep: Curseを付与した際、追加でWeaken: Nightmare Terrorを付与してターゲットが受けるダメージをX%増加させる。Sleep: Nightmare Melodyが活性化している場合はさらに別の効果が発動。'},
+    {name:'Nightmare Crescendo（悪夢のクレッシェンド）',badge:'nix',badgeText:'NIX',desc:'自分が付与したSleep: CurseまたはSleep: Cursed Nightmare状態の敵を起こした際、基礎ダメージのX%＋X ダメージを与える。別プレイヤーが起こした場合には効果が変化する。'},
+    {name:'Sacred Magic Circle（聖なる魔法陣）',badge:'gear',badgeText:'GEAR',desc:'Corrupted Magic Circleが「Sacred Magic Circle」に変化。パーティメンバーのSpecies DamageをX秒間X増加させるが、ダメージ効果が削除される。\nSpecialization 1「Decaying Touch」には非適用。'},
+    {name:'Magic Circle Expansion（魔法陣拡大）',badge:'nix',badgeText:'NIX',desc:'Corrupted Magic Circleの範囲を7.5mに拡大し、クールダウンをX%短縮する。\nSpecialization 1「Decaying Touch」には非適用。'},
+    {name:'Reversal Spell（反転の呪文）',badge:'gear',badgeText:'GEAR',desc:'フィールド内のパーティメンバーが受けたダメージのX%をX秒間魔法ダメージとして反射する効果を追加するが、クールダウンが増加する。'},
+    {name:'Curse Resonance（呪いの共鳴）',badge:'base',badgeText:'BASE',desc:'射程内のパーティメンバーが、自分のCurse DOTが付与されている敵に攻撃する際、1秒後にDark Explosionを発動するX%の確率バフを付与する。'},
+  ]},
+  nix:{icon:'🌟',name:'NIX Item Skills',sub:'NIX専用アイテムスキル — 15スキル',skills:[
+    {name:'Whirlpool Awakening（渦の覚醒）',badge:'nix',badgeText:'NIX',desc:'Whirlpoolの範囲を2m拡大し、持続時間をX秒延長する。'},
+    {name:"Seed of the World Tree（世界樹の種）",badge:'nix',badgeText:'NIX',desc:"Nature's BlessingがSeed of the World Treeに変化。指定した場所に最大3つの種を配置でき、それぞれX秒間持続。種に触れた味方はX Health Regenを獲得する。マナコストがXに変更。"},
+    {name:'Purifying Cry（清めの叫び）',badge:'nix',badgeText:'NIX',desc:'Purifying TouchスキルがPurifying Cryに変化。前方のパーティメンバーのデバフを除去するように変化し、クールダウンがX秒・マナコストがXに変更。'},
+    {name:'Rock Arrow（岩石矢）',badge:'nix',badgeText:'NIX',desc:'Brutal ArrowスキルがRock Arrowに変化。矢の代わりに岩が降り注ぎ、5回命中でX秒間スタンを付与する。'},
+    {name:'Ice Dragon Strike（氷竜撃）',badge:'nix',badgeText:'NIX',desc:'Flash WaveがIce Dragon Strikeに変化。チャージ時間に応じて基礎ダメージのX%〜X%の氷属性ダメージを与え、Frost効果を付与。FrostはX%の確率で別の効果に発展する。'},
+    {name:'Mana Absorption（マナ吸収）',badge:'nix',badgeText:'NIX',desc:'Redemptive Barrierのクールダウンをx秒増加させるが、近くの敵からXマナを吸収する効果を追加する。'},
+    {name:"Dead Man's Armor（死人の鎧）",badge:'nix',badgeText:'NIX',desc:'Icebound ArmorスキルがDead Mans Armorに変化。毎秒基礎ダメージのX%＋X の氷縛ダメージを与えFrostを付与、さらにX%の確率でTerror: Pullを付与する。'},
+    {name:'Multi Hit（多重ヒット）',badge:'nix',badgeText:'NIX',desc:'High Focus特化のターゲット拡大持続時間をX秒に短縮するが、効果の軽減が適用されなくなる。'},
+    {name:'Icebound Spike（氷縛棘）',badge:'nix',badgeText:'NIX',desc:'Icebound TombスキルがIcebound Spikeに変化。基礎ダメージのX%＋X の氷縛ダメージを与えFrostを付与。前方一直線に氷の棘を生成し、受けるダメージをX%増加させる。'},
+    {name:'Elemental Fusion（元素融合）',badge:'nix',badgeText:'NIX',desc:'Elemental Awakeningを変化させ、2種類の元素条件達成時に特殊スキルを発動。\n・火5個＋氷2個: Frost Smokescreen特殊発動'},
+    {name:'Chaos Grasp（混沌の掌握）',badge:'nix',badgeText:'NIX',desc:'敵ターゲットにTouch of ChaosをX%の確率で付与する。'},
+    {name:'Redemptive Barrier（贖罪の結界）',badge:'nix',badgeText:'NIX',desc:'Blessed Barrier特化「Expanded Targets」の効果範囲をXm拡大する。'},
+    {name:"Clay's Purification（粘土の浄化）",badge:'nix',badgeText:'NIX',desc:"Clay's Salvation特化のWeaken除去効果をデバフ除去に変更する。"},
+    {name:'Prismatic Beam（プリズム光線）',badge:'nix',badgeText:'NIX',desc:'指定した場所に最大3つのプリズムを配置してX秒間持続。自分とプリズム間にRay of Disasterをリンクさせ、命中した敵に基礎ダメージのX%のダメージを与える。マナコストがXに変更。'},
+    {name:"Dragon's Blessing（龍の祝福）",badge:'nix',badgeText:'NIX',desc:"Fountain of Lifeがターゲットを追尾するようになり、範囲内の敵にX%の確率でX秒間Fearを付与する。"},
+  ]},
+  'bow-enchant':{icon:'🏹💫',name:'Bow Enchants（ボウ エンチャント）',sub:'ボウ専用エンチャントスキル — 6種',skills:[
+    {name:"Zephyr's Nock Enchant（疾風のノック強化）",badge:'gear',badgeText:'ENCHANT',desc:'距離1mごとにダメージをX%増加させる。遠距離から攻撃するほど有利になる。'},
+    {name:'Blitz Enchant（電撃強化）',badge:'gear',badgeText:'ENCHANT',desc:'クールダウンをX秒短縮する。'},
+    {name:'Deadly Marker Enchant（致命マーカー強化）',badge:'gear',badgeText:'ENCHANT',desc:'マーク付き敵への攻撃時、魔法・近接・遠距離のクリティカル確率がX増加。側面・背面からの攻撃時にはさらに追加効果が発動。'},
+    {name:'Purifying Touch Enchant（浄化の触れ強化）',badge:'gear',badgeText:'ENCHANT',desc:'デバフ除去数が1個から3個に増加する。'},
+    {name:"Sniper's Sense Enchant（狙撃感覚強化）",badge:'gear',badgeText:'ENCHANT',desc:'距離1mごとにクリティカルダメージが基礎値のX%増加する。'},
+    {name:'Distorted Sanctuary Enchant（歪んだ聖域強化）',badge:'gear',badgeText:'ENCHANT',desc:'16m以内のパーティメンバー1人につきスキルHoTをX%増加。Combat Sanctuary特化によるAttack Rangeも増加。'},
+  ]},
+  'staff-enchant':{icon:'🪄💫',name:'Staff Enchants（スタッフ エンチャント）',sub:'スタッフ専用エンチャントスキル — 6種',skills:[
+    {name:'Chain Lightning Enchant（連鎖雷強化）',badge:'gear',badgeText:'ENCHANT',desc:'ダメージをX%増加させる。'},
+    {name:'Ice Spear Enchant（氷槍強化）',badge:'gear',badgeText:'ENCHANT',desc:'Movement Speed Reduction持続時間をX秒延長する。Specialization 2「Bind」にも同様の延長が適用される。'},
+    {name:'Icebound Tomb Enchant（氷縛墓強化）',badge:'gear',badgeText:'ENCHANT',desc:'Movement Speed ReductionをX%増加させる。'},
+    {name:'High Focus Enchant（高集中強化）',badge:'gear',badgeText:'ENCHANT',desc:'クールダウンをX秒短縮する。'},
+    {name:'Flame Condensation Enchant（炎凝縮強化）',badge:'gear',badgeText:'ENCHANT',desc:'Burningダメージをx%増加させる。'},
+    {name:'Frost Master Enchant（氷マスター強化）',badge:'gear',badgeText:'ENCHANT',desc:'Iceboundスキルのダメージをx%増加させる効果を追加。Mastery特化「Master of Storms」適用時はIceboundスキルのダメージが雷ダメージに変化する。'},
+  ]},
+  'wand-enchant':{icon:'✨💫',name:'Wand Enchants（ワンド エンチャント）',sub:'ワンド専用エンチャントスキル — 6種',skills:[
+    {name:'Touch of Despair Enchant（絶望の触れ強化）',badge:'gear',badgeText:'ENCHANT',desc:'Weaken: Curseのスタック1個につきダメージをX%増加させる。'},
+    {name:"Clay's Salvation Enchant（粘土の救済強化）",badge:'gear',badgeText:'ENCHANT',desc:'クールダウンをX秒短縮する。'},
+    {name:'Karmic Haze Enchant（業の靄強化）',badge:'gear',badgeText:'ENCHANT',desc:'Curse Propagationの最大ターゲット数を3体から6体に増加させる。'},
+    {name:'Ray of Disaster Enchant（災厄の光強化）',badge:'gear',badgeText:'ENCHANT',desc:'ダメージをX%増加させる。'},
+    {name:'Devotion and Emptiness Enchant（献身と空虚強化）',badge:'gear',badgeText:'ENCHANT',desc:'昼と夜の効果をX%増加させる。'},
+    {name:'Selfless Soul Enchant（無私の魂強化）',badge:'gear',badgeText:'ENCHANT',desc:'味方へのヒールスキル使用時、スタック1個につきX%ヒール量増加。Specialization「Immaculate Fury」命中時は基礎ダメージもスタック1個につきX%増加。'},
+  ]},
+  mastery:{icon:'⚡',name:'Weapon Mastery（共通マスタリー）',sub:'全武器共通スキル — 2種',skills:[
+    {name:'Bloodlust（血の渇望）',badge:'base',badgeText:'MASTERY',desc:'毎秒X%のマナを消費し続ける。5秒ごとにボスへのヘビーアタック確率とクリティカル確率がX増加する。最大3スタックまで累積可能。'},
+    {name:'Piercing Spear（貫通の槍）',badge:'base',badgeText:'MASTERY',desc:'攻撃スキル10回命中後、単体の敵に貫通の槍を発射して基礎ダメージのX%のダメージを与える。スキル1個につき最大1スタック。クールダウンXs。ターゲットのShield Block Chanceを無視する。'},
+  ]},
+};
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active-nav'));
+  const page=document.getElementById('page-'+id);
+  if(page)page.classList.add('active');
+  const nav=document.getElementById('nav-'+id);
+  if(nav)nav.classList.add('active-nav');
+  window.scrollTo(0,0);
+}
+
+function showWeapon(code){
+  const w=WEAPONS[code];
+  if(!w)return;
+  document.getElementById('detail-icon').textContent=w.icon;
+  document.getElementById('detail-title').textContent=w.name;
+  document.getElementById('detail-sub').textContent=w.sub;
+  const container=document.getElementById('detail-skills');
+  container.innerHTML=w.skills.map(s=>{
+    const bc=s.badge==='gear'?'badge-gear':s.badge==='nix'?'badge-nix':'badge-base';
+    return '<div class="skill-card"><div class="skill-card-name"><span class="skill-badge '+bc+'">'+s.badgeText+'</span>'+s.name+'</div><div class="skill-card-desc">'+s.desc+'</div></div>';
+  }).join('');
+  showPage('weapon-detail');
+}
+</script>
+</body>
+</html>
