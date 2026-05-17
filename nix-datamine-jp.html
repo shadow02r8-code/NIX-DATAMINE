@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIX データマイン 完全まとめ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Rajdhani:wght@500;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08090d;--card:#111420;--bdr:rgba(120,140,255,0.12);--bdb:rgba(120,140,255,0.35);--ac:#6c7fff;--ac2:#a78bfa;--ac3:#38bdf8;--gold:#f0b429;--red:#f87171;--grn:#34d399;--t:#e2e4f0;--t2:#8b90b0;--t3:#555a7a;}
+*{box-sizing:border-box;margin:0;padding:0;}html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--t);font-family:'Noto Sans JP',sans-serif;font-weight:300;line-height:1.7;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(108,127,255,0.03)1px,transparent 1px),linear-gradient(90deg,rgba(108,127,255,0.03)1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.page{display:none;position:relative;z-index:1;}.page.active{display:block;}
+header{position:relative;z-index:10;padding:3.5rem 2rem 2.5rem;text-align:center;border-bottom:1px solid var(--bdr);overflow:hidden;}
+header::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:60%;height:1px;background:linear-gradient(90deg,transparent,var(--ac),transparent);}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.14;pointer-events:none;}
+.o1{width:500px;height:500px;background:var(--ac);top:-200px;left:-100px;}.o2{width:400px;height:400px;background:var(--ac2);top:-150px;right:-100px;}
+.ey{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:500;letter-spacing:4px;color:var(--ac);text-transform:uppercase;margin-bottom:.6rem;}
+h1{font-family:'Orbitron',monospace;font-size:clamp(1.8rem,5vw,3.2rem);font-weight:900;background:linear-gradient(135deg,#fff,var(--ac)50%,var(--ac2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sub{margin-top:.6rem;font-size:13px;color:var(--t2);}
+.hst{display:flex;justify-content:center;gap:2rem;margin-top:1.75rem;flex-wrap:wrap;}
+.hs{text-align:center;}.hsn{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:700;color:var(--ac);}.hsl{font-size:11px;color:var(--t2);letter-spacing:1px;}
+nav{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--bdr);padding:0 .5rem;display:flex;overflow-x:auto;}
+nav a{display:block;padding:.75rem .85rem;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;text-decoration:none;color:var(--t2);white-space:nowrap;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;cursor:pointer;}
+nav a:hover,nav a.on{color:var(--ac);border-bottom-color:var(--ac);}
+main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem 1.25rem;}
+section{margin-bottom:3rem;}
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid var(--bdr);}
+.si{width:32px;height:32px;background:rgba(108,127,255,.1);border:1px solid var(--bdb);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.st2{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--ac);}
+.sc{margin-left:auto;font-family:'Orbitron',monospace;font-size:10px;color:var(--t3);}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.75rem;}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:1.1rem 1.25rem;transition:border-color .2s,transform .2s;}
+.card:hover{border-color:var(--bdb);transform:translateY(-2px);}
+.tag{display:inline-flex;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:2px 7px;border-radius:4px;margin-bottom:.6rem;}
+.tn{background:rgba(52,211,153,.1);color:var(--grn);border:1px solid rgba(52,211,153,.25);}
+.tb{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.25);}
+.tw{background:rgba(108,127,255,.1);color:var(--ac);border:1px solid var(--bdb);}
+.ti{background:rgba(240,180,41,.1);color:var(--gold);border:1px solid rgba(240,180,41,.25);}
+.ts{background:rgba(167,139,250,.1);color:var(--ac2);border:1px solid rgba(167,139,250,.25);}
+.card h3{font-size:14px;font-weight:500;margin-bottom:.4rem;color:#fff;}
+.card p{font-size:13px;color:var(--t2);line-height:1.7;}
+/* weapon cards */
+.wc{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:1rem;text-align:center;cursor:pointer;transition:border-color .2s,transform .2s,background .2s;}
+.wc:hover{border-color:var(--ac);transform:translateY(-3px);background:rgba(108,127,255,.05);}
+.wi{font-size:1.6rem;margin-bottom:.3rem;}.wn{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:#fff;}.we{font-size:10px;color:var(--t3);margin-top:1px;}.wk{font-family:'Orbitron',monospace;font-size:10px;color:var(--ac);margin-top:4px;}.wt{font-size:10px;color:var(--t3);margin-top:3px;}
+/* skill cards */
+.sk{background:var(--card);border:1px solid var(--bdr);border-left:3px solid var(--ac);border-radius:0 10px 10px 0;padding:1rem 1.25rem;margin-bottom:.6rem;transition:border-left-color .2s;}
+.sk:hover{border-left-color:var(--ac2);}
+.sk.red{border-left-color:var(--red);}.sk.grn{border-left-color:var(--grn);}.sk.gold{border-left-color:var(--gold);}
+.skn{font-size:14px;font-weight:500;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.sb{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;padding:2px 6px;border-radius:3px;}
+.sg{background:rgba(240,180,41,.1);color:var(--gold);border:1px solid rgba(240,180,41,.2);}
+.sn2{background:rgba(52,211,153,.1);color:var(--grn);border:1px solid rgba(52,211,153,.2);}
+.sb2{background:rgba(108,127,255,.1);color:var(--ac);border:1px solid var(--bdb);}
+.sr{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2);}
+.skd{font-size:13px;color:var(--t2);line-height:1.8;white-space:pre-line;}
+/* boss */
+.bc{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:1.1rem 1.25rem;transition:border-color .2s;}
+.bc:hover{border-color:rgba(248,113,113,.35);}
+.bn{font-size:15px;font-weight:500;color:#fff;margin-bottom:4px;}.bd{font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.6;}
+.bm{display:flex;flex-wrap:wrap;gap:4px;}.bm span{font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.2);}
+/* back btn */
+.bb{display:inline-flex;align-items:center;gap:8px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--t2);cursor:pointer;padding:.5rem .9rem;border:1px solid var(--bdr);border-radius:8px;margin-bottom:1.5rem;transition:color .2s,border-color .2s;}
+.bb:hover{color:var(--ac);border-color:var(--ac);}
+/* area badges */
+.af{display:flex;flex-wrap:wrap;gap:8px;}
+.ab{font-size:13px;padding:5px 13px;border:1px solid var(--bdr);border-radius:6px;color:var(--t2);background:var(--card);transition:border-color .2s,color .2s;}
+.ab:hover{border-color:var(--ac3);color:var(--ac3);}
+/* step list */
+.sl{position:relative;padding-left:1.5rem;}
+.sl::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--ac),transparent);}
+.si2{position:relative;padding:.4rem 0 .4rem 1rem;font-size:13px;color:var(--t2);}
+.si2::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#08090d;border:1px solid var(--ac);}
+/* achievement */
+.ai{display:flex;align-items:flex-start;gap:10px;padding:.6rem 0;border-bottom:1px solid var(--bdr);}.ai:last-child{border-bottom:none;}
+.ad{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:9px;}.at{font-size:13px;color:var(--t2);}
+/* memory */
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:5px;}
+.mi{font-size:12px;padding:5px 9px;border:1px solid var(--bdr);border-radius:6px;color:var(--t2);background:var(--card);display:flex;align-items:center;gap:6px;}
+.md{width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+/* rune */
+.ryc{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;}
+.rc{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:.9rem;text-align:center;}
+.rt{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;margin-bottom:4px;}
+.ra{color:var(--red);}.rd{color:var(--ac3);}.rs{color:var(--grn);}.rs2{font-size:11px;color:var(--t2);}
+/* story */
+.stc{background:linear-gradient(135deg,rgba(167,139,250,.05),rgba(108,127,255,.05));border:1px solid rgba(167,139,250,.2);border-radius:12px;padding:1.5rem;}
+.stc p{font-size:13px;color:var(--t2);line-height:1.8;}
+.chap{background:var(--card);border:1px solid var(--bdr);border-left:3px solid var(--ac2);border-radius:0 10px 10px 0;padding:.6rem 1rem;margin-bottom:.4rem;}
+.chap-n{font-size:11px;color:var(--ac2);font-family:'Rajdhani',sans-serif;letter-spacing:1px;}.chap-t{font-size:13px;color:#fff;}
+footer{position:relative;z-index:1;text-align:center;padding:2rem 2rem;border-top:1px solid var(--bdr);font-size:12px;color:var(--t3);}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--bdb);border-radius:2px;}
+@media(max-width:600px){.hst{gap:1rem;}.hsn{font-size:1.2rem;}nav a{padding:.65rem .65rem;font-size:10px;}.ryc{grid-template-columns:repeat(2,1fr);}.g4{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<header>
+  <div class="orb o1"></div><div class="orb o2"></div>
+  <p class="ey">Game Data Mining Report</p>
+  <h1>NIX DATAMINE</h1>
+  <p class="sub">完全日本語まとめ ／ 2026年5月</p>
+  <div class="hst">
+    <div class="hs"><div class="hsn">4,392</div><div class="hsl">総データ数</div></div>
+    <div class="hs"><div class="hsn">3</div><div class="hsl">Ascendedボス</div></div>
+    <div class="hs"><div class="hsn">10</div><div class="hsl">武器種</div></div>
+    <div class="hs"><div class="hsn">150+</div><div class="hsl">スキル情報</div></div>
+  </div>
+</header>
+<nav>
+  <a onclick="P('home')" class="on" id="n-home">トップ</a>
+  <a onclick="P('boss')" id="n-boss">ボス</a>
+  <a onclick="P('dungeon')" id="n-dungeon">ダンジョン</a>
+  <a onclick="P('weapons')" id="n-weapons">武器スキル</a>
+  <a onclick="P('new')" id="n-new">新コンテンツ</a>
+  <a onclick="P('story')" id="n-story">ストーリー</a>
+  <a onclick="P('areas')" id="n-areas">マップ</a>
+  <a onclick="P('items')" id="n-items">アイテム</a>
+  <a onclick="P('achievement')" id="n-achievement">実績</a>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page active"><main>
+<section>
+  <div class="sh"><div class="si">📋</div><span class="st2">概要</span></div>
+  <div class="g2">
+    <div class="card" style="cursor:pointer" onclick="P('boss')"><div class="tag tb">BOSS</div><h3>💀 ボス情報</h3><p>Ascended 3体＋フィールドボス2体。ArchBoss / FieldBoss / DungeonBoss別のドロップスキルも完全収録。</p><p style="margin-top:8px;color:var(--ac);font-size:12px;">詳細を見る →</p></div>
+    <div class="card" style="cursor:pointer" onclick="P('dungeon')"><div class="tag tn">DUNGEON</div><h3>🏛 ダンジョン</h3><p>Crimson Nightmare・Trial of the Beast・Abyss: Tumgir Hollow・Starlight Observatory（L17）の4種。</p><p style="margin-top:8px;color:var(--ac);font-size:12px;">詳細を見る →</p></div>
+    <div class="card" style="cursor:pointer" onclick="P('weapons')"><div class="tag tw">SKILLS</div><h3>⚔ 武器スキル（10種）</h3><p>Sword・Greatsword・Dagger・Spear・Crossbow・Bow・Staff・Wand・Gauntlet・Orbの全スキル完全収録。</p><p style="margin-top:8px;color:var(--ac);font-size:12px;">詳細を見る →</p></div>
+    <div class="card" style="cursor:pointer" onclick="P('new')"><div class="tag tn">NEW</div><h3>✦ 新コンテンツ</h3><p>Stellar Journey・ルーン拡張・バトルグラウンド新モード・ハウジング家具セット新追加。</p><p style="margin-top:8px;color:var(--ac);font-size:12px;">詳細を見る →</p></div>
+    <div class="card" style="cursor:pointer" onclick="P('story')"><div class="tag ts">STORY</div><h3>📖 ストーリー（Season 2）</h3><p>Part 1〜2の全章タイトル判明。Crimson Nightmare・Trial of the Beast・Abyss: Tumgir Hollowなど。</p><p style="margin-top:8px;color:var(--ac);font-size:12px;">詳細を見る →</p></div>
+    <div class="card" style="cursor:pointer" onclick="P('areas')"><div class="tag ti">MAP</div><h3>🗺 マップ・エリア</h3><p>L13エリア5地域＋新モンスター多数。各エリートスポーン情報も確認。</p><p style="margin-top:8px;color:var(--ac);font-size:12px;">詳細を見る →</p></div>
+  </div>
+</section>
+</main></div>
+
+<!-- BOSS -->
+<div id="page-boss" class="page"><main>
+<section>
+  <div class="sh"><div class="si">💀</div><span class="st2">World Boss（Ascended）</span></div>
+  <p style="font-size:13px;color:var(--t2);margin-bottom:1rem;">全ボスに4モード対応。討伐貢献度に応じて報酬獲得。</p>
+  <div class="g2" style="margin-bottom:2rem;">
+    <div class="bc"><div class="tag tb">ASCENDED</div><div class="bn">Ascended Pakilo Naru</div><div class="bd">称号：<strong style="color:#fff">Commander of Madness（狂気の司令官）</strong><br>黒いドワーフの覚醒体。Dominion Eventのメインボス。</div><div class="bm"><span>Dominion Event</span><span>Peace</span><span>Guild Raid</span><span>Inter-Server</span><span>Territory Raid</span></div></div>
+    <div class="bc"><div class="tag tb">ASCENDED</div><div class="bn">Ascended Leviathan</div><div class="bd">称号：<strong style="color:#fff">Ancient Legend（古の伝説）</strong><br>Abyssal Meteorと共に深海に沈んでいた巨大サメ。地震で海底が隆起し目覚めた。</div><div class="bm"><span>Dominion Event</span><span>Peace</span><span>Guild Raid</span><span>Inter-Server</span></div></div>
+    <div class="bc"><div class="tag tb">ASCENDED</div><div class="bn">Ascended Daigon</div><div class="bd">称号：<strong style="color:#fff">Abyssal Terror（深淵の恐怖）</strong><br>溺死者の屍とQuietiの欠片から成る凶暴な水生生物。陸上にも出没する。</div><div class="bm"><span>Dominion Event</span><span>Peace</span><span>Guild</span><span>Inter-Server</span></div></div>
+    <div class="bc"><div class="tag tb">FIELD BOSS</div><div class="bn">Frost Elder Porfos</div><div class="bd">L13エリアのフィールドボス。討伐で「Nixian Boss Expert」実績に貢献。</div><div class="bm"><span>Field</span></div></div>
+    <div class="bc"><div class="tag tb">FIELD BOSS</div><div class="bn">Field Boss: Thuban</div><div class="bd">L13エリアのフィールドボス。Porfosと両方倒すと「Nixian Boss Expert」実績解除。</div><div class="bm"><span>Field</span></div></div>
+  </div>
+
+  <div class="sh"><div class="si">⚔</div><span class="st2">ArchBoss ドロップスキル</span></div>
+  <div class="sk"><div class="skn"><span class="sb sb2">GT</span>Queen Bellandir's Gravity Field（重力場）</div><div class="skd">Explosive FluryまたはBloodstorm Dance命中時、5m範囲内の全ターゲットにCollision: Pullを付与し基礎ダメージのX%。</div></div>
+  <div class="sk"><div class="skn"><span class="sb sb2">GT</span>Enraged Queen Bellandir's Gravity Field（激怒版）</div><div class="skd">通常版と同効果だが対象のEvasionを無視して発動する。</div></div>
+  <div class="sk"><div class="skn"><span class="sb sn2">GT / NIX</span>Ice Dragon's Blessing（氷竜の祝福）</div><div class="skd">Threat BoostのBlock Chance Boost持続をX秒延長。Bleed付与のたびにX秒間基礎ダメージ+X（最大100スタック）。</div></div>
+  <div class="sk"><div class="skn"><span class="sb sb2">GT</span>Deluzhnoa's Vortex（渦）</div><div class="skd">Chain Strike: Uppercut命中時→3m範囲に渦を3秒召喚（毎秒X%ダメージ）。Bloodstorm: Blood Talon使用時→5m範囲に渦。</div></div>
+  <div class="sk"><div class="skn"><span class="sb sb2">GT</span>Enraged Deluzhnoa's Vortex（激怒版）</div><div class="skd">通常版より大きい渦を召喚。Blood Talonの渦がさらに強化される。</div></div>
+  <div class="sk"><div class="skn"><span class="sb sn2">DA / NIX</span>Atirat's Claw（爪）</div><div class="skd">Brutal IncisionがCharge Attackに変化しダメージn%増加。Thundercloudsを除去しなくなり範囲がXm拡大。Weaken状態の敵への追加効果あり。</div></div>
+  <div class="sk"><div class="skn"><span class="sb sn2">SW / NIX</span>Wall of Bitter Cold（凍てつく壁）</div><div class="skd">Stalwart BastionがWall of Bitter Coldに変化しCD X%短縮。効果中に近距離から攻撃を受けた際にDamage Reductionのx%を反射。Frostデバフも付与。</div></div>
+
+  <div class="sh" style="margin-top:2rem;"><div class="si">🌿</div><span class="st2">FieldBoss ドロップスキル</span></div>
+  <div class="sk grn"><div class="skn"><span class="sb sn2">SW / NIX</span>Rock Shield Throw（岩盾投擲）</div><div class="skd">Shield ThrowがRock Shield Throwに変化しダメージX%増加。X%の確率でMovement Speed X%減少のWeakenをX秒付与。</div></div>
+  <div class="sk grn"><div class="skn"><span class="sb sn2">ORB / NIX</span>Tectonic Shift（地殻変動）</div><div class="skd">Interstellar ExplosionがTectonic Shiftに変化。Orb1個消費し指定地点で1秒後に地殻変動。最大5体にX%基礎ダメージ+X。</div></div>
+  <div class="sk grn"><div class="skn"><span class="sb sn2">SP / NIX</span>Porfos Breath（息吹）</div><div class="skd">HP20%以下でBloodleech Aura中に1回だけHP即時X回復。敵のリカバリー効果除去のたびにHP/シールドHP減少効果を1つ除去。</div></div>
+  <div class="sk grn"><div class="skn"><span class="sb sn2">DA / NIX</span>Thuban's Verdict（裁き）</div><div class="skd">Fatal Stigma命中時にDagger Off-Hand発動確率n%増加（マーク持続中）。累積ダメージが基礎ダメージのX%に達するとマーク爆発。</div></div>
+  <div class="sk grn"><div class="skn"><span class="sb sn2">SW2 / NIX</span>Cold Snap Erosion（凍裂浸食）</div><div class="skd">Frost Cleaving使用時にX秒エリア残存。エリア内の敵にFrost 2スタック付与（DaVinci's Chill・Ice Tornadoと同様）。DaVinci's ChillまたはIce Tornadoでの追加効果あり。</div></div>
+  <div class="sk grn"><div class="skn"><span class="sb sn2">CR / NIX</span>Blessing Steal（祝福強奪）</div><div class="skd">Wind Snatcher命中時、X%の確率でターゲットのバフを1つ除去する。</div></div>
+  <div class="sk grn"><div class="skn"><span class="sb sn2">GT / NIX</span>Attack Defense Swap（攻防交換）</div><div class="skd">Eclipse of Blood使用時→Heavy Attack ChanceとCritical Damage X%増加（X秒）。Composure使用時→全Critical Damage ResistanceとHeavy Attack Damage Resistance X%増加（X秒）。</div></div>
+  <div class="sk grn"><div class="skn"><span class="sb sb2">GT / StoneGuard</span>Immortal Armor（不死の鎧）</div><div class="skd">Indomitable Armor有効中にさらにDamage ReductionをX増加させる。</div></div>
+  <div class="sk grn"><div class="skn"><span class="sb sb2">GT / Talandre</span>Leviathan's Incineration（灼熱）</div><div class="skd">Evaporation使用時に移動不能になるが、エリア内の敵に0.5秒ごとに基礎ダメージのX%の追加固定ダメージを与える。</div></div>
+
+  <div class="sh" style="margin-top:2rem;"><div class="si">🏚</div><span class="st2">DungeonBoss ドロップスキル</span></div>
+  <div class="sk gold"><div class="skn"><span class="sb sg">GT / Dungeon</span>Shatter（粉砕）</div><div class="skd">Short JabとBloodstormのダメージをX%増加。</div></div>
+  <div class="sk gold"><div class="skn"><span class="sb sg">GT / Dungeon</span>Fear Erosion（恐怖浸食）</div><div class="skd">Afterimageの追加効果が発動した際、Terror持続時間をX秒延長。Movement Speed X%減少・全防御X減少デバフも付与。</div></div>
+  <div class="sk gold"><div class="skn"><span class="sb sg">GT / Dungeon</span>Imprint of Pain（苦痛の刻印）</div><div class="skd">IncapacitateとBleed持続時間をX%増加。命中した対象の全CC耐性をX減少させる。</div></div>
+  <div class="sk gold"><div class="skn"><span class="sb sg">GT / Dungeon</span>Threat（威嚇）</div><div class="skd">Threat BoostとTauntの持続時間をX秒延長する。</div></div>
+</section>
+</main></div>
+
+<!-- DUNGEON -->
+<div id="page-dungeon" class="page"><main>
+<section>
+  <div class="sh"><div class="si">🏛</div><span class="st2">ダンジョン一覧</span></div>
+  <div class="g2" style="margin-bottom:1.5rem;">
+    <div class="card"><div class="tag tn">NEW / L13</div><h3>🩸 Crimson Nightmare（紅夢の間）</h3><p>凍てついた血の記憶が残る「Hall of Blood（血の間）」が舞台。<strong style="color:#fff">Bound Adventurer Spirit</strong>というNPCが案内する3ラウンド制ダンジョン。</p><div class="sl" style="margin-top:.75rem;">
+      <div class="si2">入場時：「血に飢えたこの場所があなたを3回試す」</div>
+      <div class="si2">Round 1：最初の幻影が覚醒。倒すとBlood Soulを吸収</div>
+      <div class="si2">Round 2：深紅の記憶が再び出現。倒してBlood Soulを吸収</div>
+      <div class="si2">Round 3：「最も深く刻まれた紅の記憶」が最終幻影として顕現</div>
+      <div class="si2">クリア後：出現したポータルから脱出</div>
+    </div>
+    <p style="font-size:12px;color:var(--ac3);margin-top:.75rem;">使用ボスソウル12種：Karnix / King Chimaerus / Ahzreil / Nirma / Aridus / Chernobog / Talus / Malakar / Grand Aelon / Cornelius / Morokai / Adentus</p></div>
+    <div class="card"><div class="tag tn">NEW / L13</div><h3>🐾 Trial of the Beast（獣の試練）</h3><p><strong style="color:#fff">Taurk Fighter（タウルク戦士）</strong>が獣人の軍団を率いて戦場に入場。ビーストキンの軍団を含む複数フェーズの戦闘コンテンツ。</p><p style="margin-top:.5rem;font-size:12px;color:var(--t3);">最終試練：「Taurk FighterとHis Legionを撃破せよ」</p></div>
+    <div class="card"><div class="tag tn">NEW / L13</div><h3>🕳 Abyss: Tumgir Hollow（タムギル回廊の深淵）</h3><p>L13エリア「Tumgir Hollow」に位置するアビスダンジョン。深淵専用のコンテンツとしてデータが確認されている。</p></div>
+    <div class="card"><div class="tag tn">NEW / L17</div><h3>🌟 Starlight Observatory（星明かりの観測所）</h3><p>L17の新ダンジョン系コンテンツ。水・炎・収集・時間制限・ゾンビ回避など多彩なギミックが搭載。</p><div class="sl" style="margin-top:.75rem;">
+      <div class="si2">薬草部屋の火を水で消す</div>
+      <div class="si2">水に触れずに制限時間内でルートを進む</div>
+      <div class="si2">Stardust（星塵）を集めてRelic Chestを開ける</div>
+      <div class="si2">Observatory廃墟でフラッグを発見・チェストを開く</div>
+      <div class="si2">ゾンビに攻撃されずに鐘楼のベルを全て鳴らす</div>
+      <div class="si2">出現したモンスターを全て倒す</div>
+    </div></div>
+  </div>
+</section>
+</main></div>
+
+<!-- WEAPONS -->
+<div id="page-weapons" class="page"><main>
+<section>
+  <div class="sh"><div class="si">⚔</div><span class="st2">武器スキル一覧（10種）</span><span class="sc">タップで詳細</span></div>
+  <p style="font-size:13px;color:var(--t2);margin-bottom:1rem;">武器カードをタップすると全スキルの詳細が表示されます。</p>
+  <div class="g4">
+    <div class="wc" onclick="W('sw')"><div class="wi">🛡</div><div class="wn">ソード</div><div class="we">SWORD</div><div class="wk">21スキル</div><div class="wt">タップで詳細 →</div></div>
+    <div class="wc" onclick="W('sw2')"><div class="wi">⚔</div><div class="wn">グレートソード</div><div class="we">GREATSWORD</div><div class="wk">15スキル</div><div class="wt">タップで詳細 →</div></div>
+    <div class="wc" onclick="W('da')"><div class="wi">🗡</div><div class="wn">ダガー</div><div class="we">DAGGER</div><div class="wk">18スキル</div><div class="wt">タップで詳細 →</div></div>
+    <div class="wc" onclick="W('sp')"><div class="wi">🔱</div><div class="wn">スピア</div><div class="we">SPEAR</div><div class="wk">18スキル</div><div class="wt">タップで詳細 →</div></div>
+    <div class="wc" onclick="W('cr')"><div class="wi">⚡</div><div class="wn">クロスボウ</div><div class="we">CROSSBOW</div><div class="wk">18スキル</div><div class="wt">タップで詳細 →</div></div>
+    <div class="wc" onclick="W('bo')"><div class="wi">🏹</div><div class="wn">ボウ</div><div class="we">BOW</div><div class="wk">12スキル</div><div class="wt">タップで詳細 →</div></div>
+    <div class="wc" onclick="W('st')"><div class="wi">🪄</div><div class="wn">スタッフ</div><div class="we">STAFF</div><div class="wk">19スキル</div><div class="wt">タップで詳細 →</div></div>
+    <div class="wc" onclick="W('wa')"><div class="wi">✨</div><div class="wn">ワンド</div><div class="we">WAND</div><div class="wk">12スキル</div><div class="wt">タップで詳細 →</div></div>
+    <div class="wc" onclick="W('gt')"><div class="wi">👊</div><div class="wn">ガントレット</div><div class="we">GAUNTLET</div><div class="wk">19スキル</div><div class="wt">タップで詳細 →</div></div>
+    <div class="wc" onclick="W('orb')"><div class="wi">🔮</div><div class="wn">オーブ</div><div class="we">ORB</div><div class="wk">20スキル</div><div class="wt">タップで詳細 →</div></div>
+  </div>
+</section>
+</main></div>
+
+<!-- WEAPON DETAIL -->
+<div id="page-wdetail" class="page"><main>
+  <div class="bb" onclick="P('weapons')">← 武器一覧に戻る</div>
+  <div id="wdetail-hero" style="margin-bottom:1.5rem;"></div>
+  <div id="wdetail-skills"></div>
+</main></div>
+
+<!-- NEW CONTENT -->
+<div id="page-new" class="page"><main>
+<section>
+  <div class="sh"><div class="si">✦</div><span class="st2">新コンテンツ</span></div>
+  <div class="g2">
+    <div class="card"><div class="tag tn">NEW</div><h3>⭐ Stellar Journey（ステラージャーニー）</h3><p><strong style="color:#fff">Adventure / Exploration / Singularity / Relic Fishing</strong>の4カテゴリ。各地域のStarry Memory（星の記憶）を集めるとステータスが上昇。コーデックス完了で報酬チェスト獲得。</p></div>
+    <div class="card"><div class="tag tn">拡張</div><h3>💎 ルーンシステム拡張</h3><p>全装備部位（Headpiece / Armor / Hands / Legs / Feet / Cloak）にAttack / Defense / Supportの3種ルーンスロットが追加。180件超のデータが確認。</p></div>
+    <div class="card"><div class="tag tw">PvP</div><h3>⚔ バトルグラウンド（BGS）新モード</h3><p>「Banish（封印）」モードが確認。Relicを敵のAltarに運んで封印し、先に規定スコアを達成したチームが勝利。オーバータイムルールも存在。</p></div>
+    <div class="card"><div class="tag ti">HOUSING</div><h3>🏠 ハウジング家具セット</h3><p>新たに2セットが確認。<strong style="color:#fff">Deluzhnoa（デルズノア）セット</strong>：ベッド・照明・テーブル・椅子・引き出し・カーテン・カーペット・鏡。<br><strong style="color:#fff">Giant Cordy（ジャイアントコーディ）セット</strong>：同8種類。</p></div>
+    <div class="card"><div class="tag ti">ITEMS</div><h3>🌿 種族エンチャント（5種）</h3><p>NIX専用の新エンチャント。Wildkin / Humanoid / Construct / Demon / Undead の5種族に対してDamage Boost・Bonus Damage・Damage Reductionをそれぞれ増加させる。</p></div>
+    <div class="card"><div class="tag tw">WEAPON</div><h3>⚡ 新武器「Exalted Oracle」シリーズ</h3><p>全武器種対応の新レアリティ武器が確認。<strong style="color:#fff">Celestial Deluzhnoa</strong>シリーズ（Permafrost Razors・Arc of Frozen Death・Ancient Petrified Staffなど）も判明。</p></div>
+  </div>
+</section>
+</main></div>
+
+<!-- STORY -->
+<div id="page-story" class="page"><main>
+<section>
+  <div class="sh"><div class="si">📖</div><span class="st2">ストーリー（Season 2）</span></div>
+  <div class="stc" style="margin-bottom:1.5rem;">
+    <p>メインクエスト「AD_S2」シリーズが多数確認。<strong style="color:var(--ac2)">Benny・Azra・Jaysin Hanzo・Sienna Parsons・Dorong・Melvin</strong>などのNPCが登場し、<strong style="color:#fff">Temple of Sylaveth Basement</strong>・<strong style="color:#fff">Purelight Tower Library</strong>・<strong style="color:#fff">Wizards' Residence</strong>などを探索する。<strong style="color:#fff">Star Fragment（星の欠片）</strong>で魔法陣を解除するシーンも存在。</p>
+  </div>
+
+  <p style="font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:2px;color:var(--ac);margin-bottom:.75rem;">ADVENTURE CODEX チャプター一覧</p>
+  <div class="chap"><div class="chap-n">PROLOGUE</div><div class="chap-t">プロローグ</div></div>
+  <div class="chap"><div class="chap-n">PART 1 CHAPTER 1</div><div class="chap-t">The Tragedy of the Casill Family（カシル家の悲劇）</div></div>
+  <div class="chap"><div class="chap-n">PART 1 CHAPTER 2</div><div class="chap-t">The Demise of the Gray-Fanged（灰牙の滅亡）</div></div>
+  <div class="chap"><div class="chap-n">PART 1 CHAPTER 3</div><div class="chap-t">Veterans Never Die（古参は死なず）</div></div>
+  <div class="chap"><div class="chap-n">PART 1 CHAPTER 4</div><div class="chap-t">The Terrific Trio of Carmine Forest（緋の森の3人組）</div></div>
+  <div class="chap"><div class="chap-n">PART 1 CHAPTER 5</div><div class="chap-t">A Sacred Pledge of Blood（血の誓い）</div></div>
+  <div class="chap"><div class="chap-n">PART 1 CHAPTER 6</div><div class="chap-t">The Song of the Vienta Dwarves（ヴィエンタドワーフの歌）</div></div>
+  <div class="chap"><div class="chap-n">PART 1 CHAPTER 7</div><div class="chap-t">The Sandstorm Overlord（砂嵐の覇者）</div></div>
+  <div class="chap"><div class="chap-n">PART 1 CHAPTER 8</div><div class="chap-t">The Demon's Smile（悪魔の微笑み）</div></div>
+  <div class="chap"><div class="chap-n">PART 1 CHAPTER 9</div><div class="chap-t">A Pact of Fire and Darkness（炎と闇の契約）</div></div>
+  <div class="chap"><div class="chap-n">PART 1 FINALE</div><div class="chap-t">Nightmare Déjà Vu（悪夢のデジャヴ）</div></div>
+  <div class="chap"><div class="chap-n">INTERLUDE</div><div class="chap-t">幕間</div></div>
+  <div class="chap"><div class="chap-n">PART 2 CHAPTER 1</div><div class="chap-t">Wizards' Traces（魔法使いたちの痕跡）</div></div>
+  <div class="chap"><div class="chap-n">PART 2 CHAPTER 2</div><div class="chap-t">The World Tree and Red Fog（世界樹と紅霧）</div></div>
+  <div class="chap"><div class="chap-n">PART 2 CHAPTER 3</div><div class="chap-t">Wounded Reunion（傷を負った再会）</div></div>
+  <div class="chap"><div class="chap-n">PART 2 CHAPTER 4</div><div class="chap-t">Sunset of Repentance（後悔の夕暮れ）</div></div>
+  <div class="chap"><div class="chap-n">ACT 4 / ACT 5</div><div class="chap-t">（詳細未確認）</div></div>
+</section>
+</main></div>
+
+<!-- AREAS -->
+<div id="page-areas" class="page"><main>
+<section>
+  <div class="sh"><div class="si">🗺</div><span class="st2">マップ・エリア（L13）</span></div>
+  <p style="font-size:13px;color:var(--t2);margin-bottom:1rem;">L13エリアの5地域と主要モンスター・NPC一覧</p>
+  <div class="g2" style="margin-bottom:1.5rem;">
+    <div class="card"><div class="tag tn">L13 REGION</div><h3>❄ Frozen Nightlands（凍てつく夜の地）</h3><p>モンスター：Frostclaw Giantkiller / Frostclaw Stalker / Frostclaw Ripper / Frostclaw Basher / Frostclaw Assassin / Giant Snowfield Scorpion / Snowfield Bear / Snowfield Leopard</p></div>
+    <div class="card"><div class="tag tn">L13 REGION</div><h3>🌀 Entropic Tundra（混沌の凍原）</h3><p>モンスター：Snebling Fodder / Snebling Stabber / Snebling Caller / Rimefiend Overlord / Rimefiend Slayer / Rimefiend Destroyer / Rimefiend Revenant / Arkeum Froststrike Wizard</p></div>
+    <div class="card"><div class="tag tn">L13 REGION</div><h3>🌑 Tumgir Hollow（タムギルの谷）</h3><p>エリートスポーン：Tumgir's Slaughter Soldier / Tumgir's Ancient Berserker / Arkeum Snowfield Riot Squad Captain / Water Golem Commander。アビスダンジョン入口あり。</p></div>
+    <div class="card"><div class="tag tn">L13 REGION</div><h3>🌫 Stillreach（静寂の領域）</h3><p>モンスター：Dramoore Barbarian / Dramoore Archer / Dramoore Cryomancer / Drakizard Swashbuckler / Mutant Beast / Gorilla Leader / Gorilla Warrior</p></div>
+    <div class="card"><div class="tag tn">L13 BASE</div><h3>🏰 Frontier Hold（辺境の砦）</h3><p>L13エリアの主要拠点。Construction Worker（Dwarf / Goblin / Snebling）が建設作業中。Shemir's Armillary Sphereなどのギミックオブジェクトあり。</p></div>
+  </div>
+  <p style="font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:2px;color:var(--ac);margin-bottom:.75rem;">その他確認済みエリア</p>
+  <div class="af">
+    <span class="ab">🌾 Golden Rye Pastures</span><span class="ab">🌊 Windhill Shores</span><span class="ab">🌲 Blackhowl Plains</span><span class="ab">🏜 Moonlight Desert</span><span class="ab">🐛 Sandworm Lair</span><span class="ab">🗿 Monolith Wastelands</span><span class="ab">🏚 Abandoned Stonemason Town</span><span class="ab">🌅 Daybreak Shore</span><span class="ab">🌿 Carmine Forest</span><span class="ab">🏔 The Raging Wilds</span><span class="ab">⚗ Manawastes</span><span class="ab">🪨 Urstella Fields</span><span class="ab">🌿 Nesting Grounds</span><span class="ab">🕳 Syleus's Abyss</span><span class="ab">🌑 Shadowed Crypt</span><span class="ab">💎 Purelight Hill</span><span class="ab">🏛 Ruins of Turayne</span><span class="ab">⛩ Shattered Temple</span><span class="ab">🌟 Fonos Basin</span><span class="ab">🌙 Starlight Observatory Ruins</span><span class="ab">🗼 Purelight Tower</span>
+  </div>
+</section>
+</main></div>
+
+<!-- ITEMS -->
+<div id="page-items" class="page"><main>
+<section>
+  <div class="sh"><div class="si">💎</div><span class="st2">アイテム・ルーンシステム</span></div>
+  <p style="font-size:13px;color:var(--t2);margin-bottom:.75rem;">装備部位別ルーンスロット（全6部位 × 3種）</p>
+  <div class="ryc" style="margin-bottom:1.5rem;">
+    <div class="rc"><div class="rt ra">Attack Rune</div><div class="rs2">攻撃力強化ルーン<br>全部位対応</div></div>
+    <div class="rc"><div class="rt rd">Defense Rune</div><div class="rs2">防御力強化ルーン<br>全部位対応</div></div>
+    <div class="rc"><div class="rt rs">Support Rune</div><div class="rs2">サポート強化ルーン<br>全部位対応</div></div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.5rem;">
+    <span style="font-size:13px;padding:5px 13px;border:1px solid var(--bdr);border-radius:6px;color:var(--t2);background:var(--card);">🪖 Headpiece</span>
+    <span style="font-size:13px;padding:5px 13px;border:1px solid var(--bdr);border-radius:6px;color:var(--t2);background:var(--card);">🛡 Armor</span>
+    <span style="font-size:13px;padding:5px 13px;border:1px solid var(--bdr);border-radius:6px;color:var(--t2);background:var(--card);">🧤 Hands</span>
+    <span style="font-size:13px;padding:5px 13px;border:1px solid var(--bdr);border-radius:6px;color:var(--t2);background:var(--card);">👖 Legs</span>
+    <span style="font-size:13px;padding:5px 13px;border:1px solid var(--bdr);border-radius:6px;color:var(--t2);background:var(--card);">👢 Feet</span>
+    <span style="font-size:13px;padding:5px 13px;border:1px solid var(--bdr);border-radius:6px;color:var(--t2);background:var(--card);">🧥 Cloak</span>
+  </div>
+  <p style="font-size:13px;color:var(--t2);margin-bottom:.75rem;">Starry Memory（星の記憶）— エリア別収集アイテム</p>
+  <div class="mg">
+    <div class="mi"><div class="md"></div>Golden Rye Pastures</div><div class="mi"><div class="md"></div>Windhill Shores</div><div class="mi"><div class="md"></div>Blackhowl Plains</div><div class="mi"><div class="md"></div>Urstella Fields</div><div class="mi"><div class="md"></div>Carmine Forest</div><div class="mi"><div class="md"></div>Nesting Grounds</div><div class="mi"><div class="md"></div>Fonos Basin</div><div class="mi"><div class="md"></div>Ruins of Turayne</div><div class="mi"><div class="md"></div>Purelight Hill</div><div class="mi"><div class="md"></div>Shattered Temple</div><div class="mi"><div class="md"></div>Syleus's Abyss</div><div class="mi"><div class="md"></div>Shadowed Crypt</div><div class="mi"><div class="md"></div>Monolith Wastelands</div><div class="mi"><div class="md"></div>Abandoned Stonemason Town</div><div class="mi"><div class="md"></div>Moonlight Desert</div><div class="mi"><div class="md"></div>Sandworm Lair</div><div class="mi"><div class="md"></div>Daybreak Shore</div><div class="mi"><div class="md"></div>Forgotten Island（Star-Born）</div>
+  </div>
+</section>
+</main></div>
+
+<!-- ACHIEVEMENT -->
+<div id="page-achievement" class="page"><main>
+<section>
+  <div class="sh"><div class="si">🏆</div><span class="st2">実績・コレクション</span><span class="sc">61 ENTRIES</span></div>
+  <div class="g2">
+    <div class="card"><div class="tag tb">COMBAT</div><h3>戦闘系実績</h3>
+      <div class="ai"><div class="ad"></div><div class="at"><strong style="color:#fff">Nixian Boss Expert</strong><br>Nixの全フィールドボス（Porfos・Thuban）を討伐</div></div>
+      <div class="ai"><div class="ad"></div><div class="at"><strong style="color:#fff">Nixian Elite Monster Expert</strong><br>Nixの全エリートモンスターを討伐</div></div>
+      <div class="ai"><div class="ad"></div><div class="at"><strong style="color:#fff">Abyss within the Nixian Abyss</strong><br>Abyssal Contract Tokenポイントを消費（累計系）</div></div>
+    </div>
+    <div class="card"><div class="tag tn">COLLECTION</div><h3>収集・探索系実績</h3>
+      <div class="ai"><div class="ad" style="background:var(--ac3)"></div><div class="at"><strong style="color:#fff">Red ball... You again?</strong><br>Nix全地域のMystic Globeに触れる</div></div>
+      <div class="ai"><div class="ad" style="background:var(--ac3)"></div><div class="at"><strong style="color:#fff">フォトコレクション（4種）</strong><br>Whispie・Layzee・Goldie・Roarieをそれぞれ撮影</div></div>
+    </div>
+  </div>
+</section>
+</main></div>
+
+<footer><p>NIX Datamine まとめ ／ データソース: 8_flat_all.json（4,392件）</p><p style="margin-top:4px;">本ページはデータマイニング情報であり、正式リリース時に変更される可能性があります。</p></footer>
+
+<script>
+const WD = {
+  sw:{icon:'🛡',name:'Sword（ソード）',sub:'盾と剣の防衛型武器 — 21スキル',skills:[
+    {n:'Attack Barrier（攻撃バリア）',b:'gear',desc:'Counter BarrierをAttack Barrierに変化。Shield Block ChanceとCounterattack効果を削除。代わりに有効中、3m範囲内の全敵に0.5秒ごとに基礎ダメージのX%を与える。'},
+    {n:'Roar of Fury（激怒の咆哮）',b:'gear',desc:'Cleaving RoarをRoar of Furyに変化。10m範囲内の最大6体にWeaken: Provokeを付与（X%確率）。全耐久をX・全ヘビーアタック回避をX減少させるX秒間のデバフ。'},
+    {n:'Earth Strike（大地撃）',b:'gear',desc:'A Shot at VictoryをEarth Strikeに変化。3m範囲内の全ターゲットに基礎ダメージのX%＋Xダメージ。X秒間ソードアクティブスキルダメージをX%増加させる。'},
+    {n:'Strength Barrier（力の壁）',b:'nix',desc:'Counter Barrier有効中、Critical Damage ResistanceをX%増加させる。'},
+    {n:'Assault Stance（攻撃姿勢）',b:'nix',desc:'Strategic RushのCollision: Push命中時、Collision ChanceをXsで最大5スタックまで増加させる。'},
+    {n:'Immortal Bond（不死の絆）',b:'nix',desc:'Immortal Pride Spec 1がBlessing of ImmortabilityをImmortal Bondに変化し、CDが30秒増加。15m範囲内の全パーティメンバーのMax HealthとシールドHealthを増加させる効果を付与。'},
+    {n:'Wall of Bitter Cold（凍てつく壁）',b:'boss',desc:'Stalwart BastionがWall of Bitter Coldに変化しCDをX%短縮。有効中、近距離攻撃を受けた際にDamage Reductionのx%に相当するダメージを反射。Frostデバフも付与。【ArchBossドロップ】'},
+    {n:'Rock Shield Throw（岩盾投擲）',b:'boss',desc:'Shield ThrowをRock Shield Throwに変化しダメージX%増加。X%の確率でMovement Speed X%減少のWeakenをX秒付与。【FieldBossドロップ】'},
+    {n:'Attack Barrier Enchantment',b:'enchant',desc:'Attack Barrierのダメージをx%増加。'},
+    {n:'Shield Throw Enchantment',b:'enchant',desc:'Shield ThrowとWhirling ShieldのPvPダメージをX%減少。Piercing Attackの成功1回ごとにShield ThrowのCDをXs短縮。'},
+    {n:'Shield Enchantment',b:'enchant',desc:'Strategic Rush・Shield Throw・Whirling Shield・Fierce Clash・Desperate Clashのダメージをx%増加。'},
+    {n:'Increase Earth Strike Range',b:'enchant',desc:'Earth Strikeの範囲を3m拡大する。'},
+    {n:'Weaken Shield',b:'enchant',desc:'A Shot at Victory・Annihilation Blade・Earth Strikeでダメージを与えた際、X%の確率でShield Health ReceivedをX%減少（X秒）。シールド中の敵には固定ダメージを与える。'},
+    {n:'Roar of Fury Enchantment',b:'enchant',desc:'Weaken: Provokeをモンスターに付与した際、X秒間HP×Xのシールドを生成。'},
+    {n:'Shield Strike Enchantment',b:'enchant',desc:'Shield StrikeとPiercing Attackのダメージをx%増加。'},
+    {n:'Strategic Rush Enchantment',b:'enchant',desc:'Strategic RushのCollision: Push確率をX%増加。'},
+    {n:'Chain Hook Enchantment',b:'enchant',desc:'Chain HookとControlling RakeのCDをXs短縮。'},
+    {n:'Stalwart Bastion Enchantment',b:'enchant',desc:'有効中、自分とパーティメンバーのDamage ReductionをX増加させる。'},
+    {n:'Spectrum of Agony Enchantment',b:'enchant',desc:'Spectrum of AgonyとSpectrum of Annihilationのダメージをx%増加。'},
+    {n:"Gerad's Patience Enchantment",b:'enchant',desc:'全CC Resistance増加をX増加させる。'},
+    {n:'Movement Speed Reduction',b:'gear',desc:'Roar of FuryからWeaken: Provokeを付与した際、Movement SpeedをX%減少させる（Xs）。'},
+  ]},
+  sw2:{icon:'⚔',name:'Greatsword（グレートソード）',sub:'両手剣の重量型武器 — 15スキル',skills:[
+    {n:'Earth Shatter（大地粉砕）',b:'gear',desc:'Gaia Crashの範囲を2m拡大。Critical Hit時にCDを0.4秒短縮。'},
+    {n:'Frenzy（狂乱）',b:'gear',desc:'Gaia CrashとFrost CleavingのPvPダメージをX%減少させるが、対モンスターダメージをX%増加させる。'},
+    {n:'Frost Snare（氷の罠）',b:'gear',desc:'Frost Cleavingのダメージエリアの最初のヒット時、X%の確率でターゲットにCollision: Pullを付与しエリアの中心に引き寄せる。'},
+    {n:'Back Attack（背後攻撃）',b:'gear',desc:'Greatsword Mobility Skillsで敵に命中した際、3秒間全攻撃を背後からの攻撃として扱う。'},
+    {n:'Flash（閃光）',b:'gear',desc:'GreatswordがStunまたはShock状態の敵に命中した際、Mobility SkillのCDをXs短縮。'},
+    {n:'Battlefield Momentum（戦場の勢い）',b:'nix',desc:'Precision Dashを最大3回チャージ可能に。ダッシュ終了時、7m範囲に味方防御をX%増加・敵防御をX%減少させるエリアを生成（Xs）。3秒以内に再使用するとエリアを消す。'},
+    {n:'Devotion Barrier（献身の結界）',b:'nix',desc:'Blood DevotionまたはDevoted Sanctuary使用時、自分のShield Health Decrease・Shield Health Received Decrease効果を除去し、シールド除去を無視するHPxのシールドを生成。'},
+    {n:'Judgment（裁き）',b:'nix',desc:'HP30%以下のターゲットにGuillotine Bladeを使用した際、ダメージをX%増加させる。'},
+    {n:'Cold Snap Erosion（凍裂浸食）',b:'boss',desc:'Frost Cleaving使用時にX秒エリアが残存。エリア内の敵にFrost 2スタック付与。DaVinci\'s ChillまたはIce Tornadoでの追加効果あり。【FieldBossドロップ】'},
+    {n:'Death Blow Enchantment',b:'enchant',desc:'ダメージをx%増加。'},
+    {n:'Guillotine Blade Enchantment',b:'enchant',desc:'ダメージをx%増加。'},
+    {n:'Willbreaker Enchantment',b:'enchant',desc:'Defense Reduction Rateをx%増加。'},
+    {n:'Devastating Tornado Enchantment',b:'enchant',desc:'命中時、さらにダメージをx%増加。'},
+    {n:'Indomitable Armor Enchantment',b:'enchant',desc:'Magic・Melee・Ranged DefenseをX%増加（最大5スタック）。'},
+    {n:'Vital Force Enchantment',b:'enchant',desc:'Skill Damage BoostをX%増加。Vital Conversion有効時、Skill Damage ResistanceをX%増加。'},
+  ]},
+  da:{icon:'🗡',name:'Dagger（ダガー）',sub:'二刀流の高機動武器 — 18スキル',skills:[
+    {n:'Detect Vulnerability（脆弱性検知）',b:'base',desc:'ダガーで敵に通常攻撃10回命中後、Off-hand Weapon発動確率をX%増加・Off-hand Weapon最大ダメージをX増加（Xs）。'},
+    {n:'Creeping Death（忍び寄る死）',b:'gear',desc:'Venomous Edge発動時、攻撃したターゲットをゆっくり追う3mの毒雲を生成。毒雲はXs持続し範囲内の敵に基礎ダメージのX%＋X ダメージを与える。'},
+    {n:'Venomous Swamp（毒の沼）',b:'gear',desc:'Venomous Edge発動時、発動した場所に6mの毒雲を生成（移動しない）。PvPダメージをX%減少するが対モンスターダメージを増加。'},
+    {n:'Foretold Agony（予告された苦痛）',b:'gear',desc:'Venomous Edgeのダメージを固定ダメージとして適用。Creeping DeathまたはVenomous Swampが有効中なら毒雲ダメージも固定ダメージ化。'},
+    {n:'Contagion（伝染）',b:'gear',desc:'Fatal Stigmaがダメージを与えた際、Xm範囲内のターゲット1体にFatal Stigmaを1回追加で付与。伝染したFatal Stigmaは既存のエフェクトを引き継ぐ。'},
+    {n:'Massacre（虐殺）',b:'gear',desc:'Fatal Stigma Spec 1「Area Damage」をMassacreに変化。範囲ダメージ範囲をXm拡大し、毒とThundercloudsのスタック数に比例したダメージを与える。'},
+    {n:'Execution（処刑）',b:'gear',desc:'Fatal Stigmaがダメージを与えた際、ターゲットのHPが10%以下なら即死級ダメージを与える（モンスターには不可）。'},
+    {n:'Thunder Bombardment（雷撃爆弾）',b:'nix',desc:'Thundering Bomb使用時、ターゲットがWetまたはFrost状態なら、Weaken: ThundercloudsのスタックとOther Enemyに追加ダメージを与える。'},
+    {n:'Thunder Call（雷の呼び声）',b:'nix',desc:'Cleaving Moonlight命中時、ターゲットにWeaken: Thundercloudsが存在するなら2スタックを除去し、落雷を呼んで攻撃する。'},
+    {n:'Ambush（奇襲）',b:'nix',desc:'Shadow Strike使用時、Critical Hit Chanceが1,600以下なら Critical Hit ChanceをXs間X増加。1,600超過なら Critical DamageをXs間X%増加。'},
+    {n:"Thuban's Verdict（裁き）",b:'boss',desc:'Fatal Stigma命中時、マーク持続中はDagger Off-Hand Weapon発動確率をn%増加。累積ダメージが基礎ダメージのX%に達すると爆発して大ダメージ。【FieldBossドロップ】'},
+    {n:"Atirat's Claw（爪）",b:'boss',desc:'Brutal IncisionがCharge Attackに変化しスキルダメージn%増加。Thundercloudsを除去しなくなり範囲がXm拡大。Weaken状態の敵への追加効果あり。【ArchBossドロップ】'},
+    {n:'Inject Venom Enchantment',b:'enchant',desc:'Inject Venomチェーンスキルのダメージをx%増加。'},
+    {n:'Vampiric Strike Enchantment',b:'enchant',desc:'Vampiric Strikeのダメージをx%増加。'},
+    {n:'Cleaving Moonlight Enchantment',b:'enchant',desc:'Cleaving Moonlightの各ヒットのダメージをx%増加。'},
+    {n:'Ankle Strike Enchantment',b:'enchant',desc:'Ankle StrikeのCDをXs短縮。'},
+    {n:'Murderous Energy Enchantment',b:'enchant',desc:'Murderous EnergyのPoisonとThunderclouds持続時間を昼はXs・夜はXs延長。Poisonダメージも昼X%・夜X%増加。'},
+    {n:'Destructive Fang Enchantment',b:'enchant',desc:'Destructive FangのDefense reductionをX増加。'},
+  ]},
+  sp:{icon:'🔱',name:'Spear（スピア）',sub:'突撃型の長射程武器 — 18スキル',skills:[
+    {n:'Lightning Javelin & Explosive Lightning Slash',b:'gear',desc:'Javelin InfernoをLightning Javelinに・Explosive FuryをExplosive Lightning Slashに変化。\nLightning Javelin: 指定ターゲットに基礎ダメージのX%+Xダメージ。\nExplosive Lightning Slash: 複数フェーズで使用可能な雷属性斬撃スキル。'},
+    {n:'Lightning Javelin Enchantment',b:'enchant',desc:'Lightning Javelinを方向/地点指定に変更。PvPダメージX%減少・対モンスターダメージ増加。指定方向に5本の槍を投擲する形に変化。'},
+    {n:'Explosive Lightning Slash Enchantment',b:'enchant',desc:'Explosive Lightning Slashの最大使用回数を5回に変更。'},
+    {n:'Ascending Cleave（上昇斬撃）',b:'gear',desc:'Ascending Cleaveの効果を変更。ジャンプ中に使用: 2m範囲の敵に基礎ダメージのX%ダメージ + Collision: Prone（100%確率でXs）。静止中に使用: 同等ダメージ。'},
+    {n:'Ascending Cleave Enchantment',b:'enchant',desc:'PvPダメージX%減少・対モンスターダメージ増加。Collision: ProneまたはStunをモンスターに付与時、5m範囲に衝撃波を発生させ追加ダメージ。'},
+    {n:'Criticality Explosion（暴裂）',b:'nix',desc:'Phoenix Barrage使用時、自分が付与したWeaken: Burstのスタック1つにつきSkill DamageをX%増加。各ヒットがCritical Hitの場合、Weaken: Igniteを2スタック追加付与。'},
+    {n:'Slaughtering Execution（殺戮の処刑）',b:'nix',desc:'Enforcer有効中、Xm範囲内のターゲット1体ごとに全CC ChanceをX増加（最大5体）。MagicMeleeRanged AccuracyもX増加（Xs）。'},
+    {n:'Battlefield Frenzy（戦場の狂乱）',b:'nix',desc:'Death Knell有効中、SpearアクティブスキルのヒットごとにSkill Damage BoostをX・Attack SpeedをX%増加（Xs）。最大3スタック。3スタック時にXクールダウン発生。'},
+    {n:"Porfos Breath（息吹）",b:'boss',desc:'HP20%以下でBloodleech Aura使用中に1回だけHPをX即時回復。敵のリカバリー効果除去のたびにHP/シールドHP減少効果を1つ除去。【FieldBossドロップ】'},
+    {n:'Pulse of the Battlegrounds',b:'base',desc:'SpearコントロールスキルがCollision・Bind・Stun・Fearを付与した際、自分と8m内の味方のMelee Heavy AttackをX増加・Heavy Attack DamageをX%増加（Xs）。パーティなしは効果が変化。'},
+    {n:'Tempest Strike Enchantment',b:'enchant',desc:'Tempest StrikeのCDをXs短縮。'},
+    {n:'Culling Arc/Spiral Slash Enchantment',b:'enchant',desc:'Culling ArcとSpiral Slashそれぞれのダメージをx%増加。'},
+    {n:'Javelin Surge Enchantment',b:'enchant',desc:'Javelin SurgeのCDをXs短縮。'},
+    {n:'Rising Slash Enchantment',b:'enchant',desc:'BurstとIgniteスタックに基づくRising SlashのDamage Boostをx%増加。'},
+    {n:'Mortal Wrath Enchantment',b:'enchant',desc:'Mortal WrathとMortal Gambitのダメージをx%増加。Vampirism Wrath HP回復をx%増加。'},
+    {n:'Imposing Form Enchantment',b:'enchant',desc:'Imposing FormのSkill Damage Boostをx%増加。'},
+    {n:'Scorched Earth（焦土）',b:'boss',desc:'Javelin Surgeを貫通型に変更し、敵のHeavy Attack Damage ResistanceをX%減少させるWeakenを80%の確率で付与（Xs）。'},
+    {n:'(参考) Spiral Slash追加ヒット',b:'boss',desc:'Spiral Slashがヘビーアタックとして命中した際、Spiral Slashをさらに1回追加使用（最大1回）。'},
+  ]},
+  cr:{icon:'⚡',name:'Crossbow（クロスボウ）',sub:'罠と速射の遠距離武器 — 18スキル',skills:[
+    {n:'Support Fire（支援射撃）',b:'gear',desc:'Explosive TrapをSupport Fireに変化。指定地点にArbalest（砲台）を設置。Quick Fire・Recoil Shot・Wave Shot使用時、Arbalestも同じスキルを使用する。'},
+    {n:'Explosive Arrow（爆発矢）',b:'gear',desc:'Recoil ShotとWave ShotをExplosive Arrowに変化。Recoil Shot使用時、ターゲット3m範囲の全敵に基礎ダメージのX%+Xダメージ。X%の確率で追加効果あり。'},
+    {n:'Focused Barrage（集中砲火）',b:'gear',desc:'Merciless BarrageまたはWild Barrage使用時、ArbalestもArbalestも同じスキルをターゲットに使用する（Support Fire要）。'},
+    {n:"Mother Nature's Fury（自然の怒り）",b:'gear',desc:'Quick Fire使用時、Multi-Shot・Rapid Shot・Collision ShotのCDをXs短縮。これら3スキルのPvPダメージをX%減少・対モンスターダメージを増加。'},
+    {n:'Blade Storm（刃の嵐）',b:'gear',desc:'Rapid ShotをBlade Stormに変化。ターゲットを5回攻撃。各攻撃がX%+Xダメージを与え、Magic・Melee・Ranged Magic DefenseをXs間X減少させるWeakenを付与。'},
+    {n:'Lightning Expansion（雷拡散）',b:'gear',desc:'Rapid ShotをLightning Expansionに変化。指定方向の60度コーンにAttack RangeのX%の範囲で雷ダメージ。'},
+    {n:'Frost Expansion（氷拡散）',b:'gear',desc:'Rapid ShotをFrost Expansionに変化。指定方向の60度コーンに氷ダメージを与えFrost効果を付与。'},
+    {n:'Attribute Arrow (Flame)（炎属性矢）',b:'gear',desc:'炎属性の矢を使用する。'},
+    {n:'Disruption Shot（妨害射撃）',b:'nix',desc:'Recoil Shot命中時、X%の確率でMagic・Melee・Ranged Hit ChanceとEvasionを減少させるWeakenをXs付与。Wave Shot命中時、3スタックのWeakenを付与。'},
+    {n:'Double Trap（二重罠）',b:'nix',desc:'Explosive Trapを最大2回チャージ可能に。同時に設置できるトラップの最大数を1増加。'},
+    {n:'Blessing Steal（祝福強奪）',b:'boss',desc:'Wind Snatcher命中時、X%の確率でターゲットのバフを1つ除去。【FieldBossドロップ】'},
+    {n:'Storm Current（嵐の流れ）',b:'base',desc:'CrossbowまたはLongbowの通常攻撃がターゲットに命中した際、X%の確率でXs間Galeを付与。Gale状態の敵へのヒットごとに基礎ダメージのX%のボーナスダメージ。'},
+    {n:'Quick Fire Enchantment',b:'enchant',desc:'ダメージをx%増加。'},
+    {n:'Mortal Mark Enchantment',b:'enchant',desc:'マーク付きターゲットへのダメージをx%増加。'},
+    {n:"Mother Nature's Protest Enchantment",b:'enchant',desc:'追加プロジェクタイルダメージをx%増加。'},
+    {n:'Nimble Leap Enchantment',b:'enchant',desc:'Critical Damageをx%増加。'},
+    {n:'Ambidexterity Enchantment',b:'enchant',desc:'Off-hand Weapon最大ダメージをx%増加。'},
+    {n:'Piercing Strike Enchantment',b:'enchant',desc:'Bonus DamageをX%増加・Stamina RegenをX%増加。'},
+  ]},
+  bo:{icon:'🏹',name:'Bow（ボウ）',sub:'弓系長距離攻撃武器 — 12スキル',skills:[
+    {n:'Pierce Shot（貫通射撃）',b:'base',desc:'Weaken: Pierce ShotをXs付与。毎秒基礎ダメージのX%+Xダメージを与え、対象のHealing ReceivedをX%減少させる。'},
+    {n:'Infinite Strafing（無限乱射）',b:'gear',desc:'Strafingをトグルスキルに変化。矢を中断なく連射。マナ基本消費が減少するが、矢を撃つたびにマナコストが増加。Spec2「Directional Tempest」・Spec3「Consecutive Use」には非適用。'},
+    {n:'Triple Snipe（トリプルスナイプ）',b:'gear',desc:'Decisive Snipingを最大3回使用可能な移動スキルに変化。ダメージは基礎ダメージのX%+X。Spec1・Spec3・Spec4には非適用。'},
+    {n:"Wind God's Snipe（風神の狙撃）",b:'gear',desc:'Decisive Snipingの矢が通過した1秒後に衝撃波を発生させ、基礎ダメージのX%+Xダメージを3回与える。PvPダメージ減少・対モンスターダメージ増加。'},
+    {n:'Torrent（濁流）',b:'gear',desc:'Whirlpool上にいる間、StrafingとZephyr\'s Nockのダメージは減少するが最大6体へのAoEスキルに変化。Strafing: 基礎ダメージX%+X。Zephyr\'s Nock: 基礎ダメージX%+X。'},
+    {n:'Eagle Eye（鷹の目）',b:'gear',desc:'Strafingで命中した敵にBullseyeとGaleをそれぞれ1スタックずつ追加する。'},
+    {n:'Double Shot（ダブルショット）',b:'base',desc:'直前スキルのCDをリセット。\n非対応スキル：Immortal Pride / Devastating Smash / Frost Smokescreen / Judgment Lightning / Strafing / Arrow Vortex / Death From Above / Fountain of Life / Star Destroyer / Time Dilation / Echoes of Distortion'},
+    {n:"Zephyr's Nock Enchant",b:'enchant',desc:'距離1mごとにダメージをX%増加。'},
+    {n:'Blitz Enchant',b:'enchant',desc:'CDをXs短縮。'},
+    {n:'Deadly Marker Enchant',b:'enchant',desc:'マーク付き敵への攻撃時、Magic・Melee・RangedクリティカルチャンスをX増加。側面・背面攻撃時はさらに増加。'},
+    {n:'Purifying Touch Enchant',b:'enchant',desc:'デバフ除去数を1個から3個に増加。'},
+    {n:"Sniper's Sense Enchant",b:'enchant',desc:'距離1mごとにCritical Damageが基礎値のX%増加。'},
+    {n:'Distorted Sanctuary Enchant',b:'enchant',desc:'16m内のパーティメンバー1人につきSkill HoTをX%増加。Combat Sanctuary特化のAttack Rangeも増加。'},
+  ]},
+  st:{icon:'🪄',name:'Staff（スタッフ）',sub:'三属性魔法の攻撃武器 — 19スキル',skills:[
+    {n:'Elemental Awakening（元素覚醒）',b:'base',desc:'スタッフスキルで敵を攻撃し一定数のElementalスタックを蓄積すると発動。Species Damage Boostを増加させ、他のスタッフスキルの残りCDを短縮。3種の元素エフェクト（Flame / Ice / Lightning Element）あり。'},
+    {n:'Elemental Fusion（元素融合）',b:'nix',desc:'Elemental AwakeningをElemental Fusionに変化。2種類の元素条件が同時に満たされると特殊スキルが発動。\n・火5個＋氷2個→Frost Smokescreen特殊発動'},
+    {n:'Ice Mist（氷霧）',b:'gear',desc:'Frost Smokescreen範囲内に霜の霧が覆い、範囲内で1回のステルスを付与。ステルスが解除されるか範囲外に出て再入場した場合、ステルスは再度付与されない。'},
+    {n:'Icebound Explosion（氷縛爆発）',b:'gear',desc:'Frost SmokescreenがMovement Speed ReductionとWeaken: Frostbiteを付与した際、単体に基礎ダメージのX%+X ダメージ。Bind: Icebound終了時に追加の範囲ダメージ。'},
+    {n:'Absolute Zero（絶対零度）',b:'gear',desc:'Frost Smokescreenの範囲を6m半径に拡大。0.5秒ごとにXs間Weaken: Frostbiteを付与。Weaken: Frostbiteが付与された対象のMovement SpeedをX%追加減少。'},
+    {n:'Thunder Shadow（雷影）',b:'gear',desc:"Thunder's BlessingがThunder Shadowに変化。敵を追跡し、落雷命中時にWeaken: Thundercloudsを付与。"},
+    {n:'Lightning Condensation（雷光凝縮）',b:'gear',desc:'落雷半径を2.5mに縮小するが、ダメージが基礎ダメージのX%に調整。Weaken: Thundercloudsのスタック数に比例した追加ダメージ。'},
+    {n:'Thunderclouds Explosion（雷雲爆発）',b:'gear',desc:'落雷頻度を毎秒2回に減少するが、各落雷が1m半径の3体まで範囲ダメージ（基礎ダメージのX%）に変化。PvPダメージ減少あり。'},
+    {n:'Lava Dust（溶岩の塵）',b:'base',desc:'範囲内の敵に毎秒基礎ダメージのX%+X ダメージ。Weaken: Lava DustをXs付与。スタック4個でPetrification（石化）を付与。'},
+    {n:'Magnetic Field（磁場）',b:'base',desc:'敵に雷ダメージを与えるMagnetic Fieldを生成。Weaken: Magnetic FieldでMovement SpeedをX%減少（Xs）。チェーン効果あり。'},
+    {n:'Firestorm（炎嵐）',b:'base',desc:'ターゲットをXs間追いかけるFirestormを召喚。基礎ダメージのX%+XダメージとWeaken: Burningを付与。'},
+    {n:'Chain Lightning Enchant',b:'enchant',desc:'ダメージをX%増加。'},
+    {n:'Ice Spear Enchant',b:'enchant',desc:'Movement Speed Reduction持続時間をXs延長。Spec2「Bind」にも同様の延長。'},
+    {n:'Icebound Tomb Enchant',b:'enchant',desc:'Movement Speed ReductionをX%増加。'},
+    {n:'High Focus Enchant',b:'enchant',desc:'CDをXs短縮。'},
+    {n:'Flame Condensation Enchant',b:'enchant',desc:'BurningダメージをX%増加。'},
+    {n:'Frost Master Enchant',b:'enchant',desc:'Iceboundスキルのダメージをx%増加。Mastery特化「Master of Storms」適用時はIceboundスキルのダメージが雷ダメージに変化し増加量がさらに増加。'},
+    {n:'Flame Element（炎元素）',b:'base',desc:'3スタックでスタッフIceboundスキルのCDをX%短縮。'},
+    {n:'Ice Element（氷元素）',b:'base',desc:'3スタックでスタッフLightningスキルのCDをX%短縮。'},
+    {n:'Lightning Element（雷元素）',b:'base',desc:'3スタックでスタッフFireスキルのCDをX%短縮。'},
+  ]},
+  wa:{icon:'✨',name:'Wand（ワンド）',sub:'呪いと睡眠の魔法支援武器 — 12スキル',skills:[
+    {n:'Nightmare Melody（悪夢の旋律）',b:'gear',desc:'Sleep: Cursed NightmareをSleep: Nightmare Melodyに変化。毎秒基礎ダメージのX%+X ダメージを与え、Sleep: Curseをターゲットに付与。Sleep免疫の敵にはDrowsy付与。'},
+    {n:'Nightmare Conductor（悪夢の指揮者）',b:'nix',desc:'Sleep: Curse付与時、Weaken: Nightmare Terrorを追加付与しターゲットの被ダメージをX%増加。Sleep: Nightmare Melody適用中なら効果がさらに強化される。'},
+    {n:'Nightmare Crescendo（悪夢のクレッシェンド）',b:'nix',desc:'自分が付与したSleep: CurseまたはSleep: Cursed Nightmare状態の敵を起こした際、基礎ダメージのX%+X ダメージ。Sleep: Nightmare Melody状態の敵、Drowsy状態の敵を起こした時は別効果。'},
+    {n:'Sacred Magic Circle（聖なる魔法陣）',b:'gear',desc:'Corrupted Magic CircleをSacred Magic Circleに変化。パーティメンバーのSpecies DamageをXs間X増加させるが、ダメージ効果は削除。Spec1「Decaying Touch」・Spec2には非適用。'},
+    {n:'Magic Circle Expansion（魔法陣拡大）',b:'nix',desc:'Corrupted Magic Circleの範囲を7.5mに拡大し、CDをX%短縮。Spec1「Decaying Touch」には非適用。'},
+    {n:'Reversal Spell（反転の呪文）',b:'gear',desc:'フィールド内のパーティメンバーが受けたダメージのX%をXs間魔法ダメージとして反射する効果を追加するが、CDが増加。Spec1には非適用。'},
+    {n:'Curse Resonance（呪いの共鳴）',b:'base',desc:'射程内のパーティメンバーが自分のCurse DOTが付与されている敵に攻撃する際、1秒後にDark ExplosionをX%の確率で発動する。'},
+    {n:'Touch of Despair Enchant',b:'enchant',desc:'Weaken: Curseのスタック1個につきダメージをX%増加。'},
+    {n:"Clay's Salvation Enchant",b:'enchant',desc:'CDをXs短縮。'},
+    {n:'Karmic Haze Enchant',b:'enchant',desc:'Curse Propagationの最大ターゲット数を3体から6体に増加。'},
+    {n:'Ray of Disaster Enchant',b:'enchant',desc:'ダメージをX%増加。'},
+    {n:'Devotion and Emptiness Enchant',b:'enchant',desc:'昼と夜の効果をX%増加。'},
+    {n:'Selfless Soul Enchant',b:'enchant',desc:'味方へのヒールスキル使用時、スタック1個につきX%ヒール増加。Spec「Immaculate Fury」命中時は基礎ダメージもスタック1個につきX%増加。'},
+  ]},
+  gt:{icon:'👊',name:'Gauntlet（ガントレット）',sub:'格闘型のタンク/ディーラー武器 — 19スキル',skills:[
+    {n:'Crimson Echo（深紅の残響）',b:'gear',desc:'Blood Explosionのダメージをx%増加。さらに、ターゲットのBleed DOTがもはや除去できなくなる。'},
+    {n:'Crimson Circulation（深紅の循環）',b:'gear',desc:'Blood Explosionで攻撃したターゲットが3秒以内に死亡した場合、スキルのCDをXs短縮。PvPダメージX%減少。'},
+    {n:'Crimson Condensation（深紅の凝縮）',b:'gear',desc:'Blood Explosionのダメージをx%減少するが、固定ダメージとして与えるようになる。'},
+    {n:'Chain Wave（連鎖波動）',b:'gear',desc:'Earthquakeのヒット数を2増加する。'},
+    {n:'Wave Resonance（波動共鳴）',b:'gear',desc:'Sweepがヒットしたターゲット数に比例して、EarthquakeとBlood Gale FrenzyのCDを残りX%短縮。各ヒットごとにEarthquake/Blood Gale FrenzyのCDも短縮。'},
+    {n:'Hit Stack（スタック蓄積）',b:'gear',desc:'Earthquakeで3回ヒットされた際、80%の確率で3秒間Stunを付与する。'},
+    {n:'Attack Defense Swap（攻防交換）',b:'boss',desc:'Eclipse of Blood使用時→Heavy Attack ChanceとCritical DamageをX%増加（Xs）。Composure使用時→全Critical Damage ResistanceとHeavy Attack Damage ResistanceをX%増加（Xs）。【FieldBossドロップ】'},
+    {n:"Queen Bellandir's Gravity Field",b:'boss',desc:'Explosive FluryまたはBloodstorm Dance命中時、5m範囲の全ターゲットにCollision: Pullを付与し基礎ダメージのX%。【ArchBossドロップ】'},
+    {n:"Ice Dragon's Blessing（氷竜の祝福）",b:'boss',desc:'Threat BoostのBlock Chance Boost持続をXs延長。Bleed付与のたびにXs間基礎ダメージ+X（最大100スタック）。【NIX ArchBossドロップ】'},
+    {n:"Deluzhnoa's Vortex",b:'boss',desc:'Chain Strike: Uppercut命中時→3m範囲に渦を3秒召喚（毎秒基礎X%ダメージ）。Blood Talon使用時→5m範囲の渦。【T2 ArchBossドロップ】'},
+    {n:'Short Jab Enchantment',b:'enchant',desc:'Short Jabのダメージをx%増加。'},
+    {n:'Fortitude Crustacean Enchantment',b:'enchant',desc:'Fortitude CrustaceanのCDをX%短縮。'},
+    {n:'Eclipse of Blood Enchantment',b:'enchant',desc:'Eclipse of Bloodのリソース消費をX%減少。'},
+    {n:'Threat Boost Enchantment',b:'enchant',desc:'Threat Boostの持続時間をXs延長。'},
+    {n:'Master of Provocation Enchantment',b:'enchant',desc:'Master of Provocationのエンチャント効果をX%増加。'},
+    {n:'Incapacitate Enchantment',b:'enchant',desc:'IncapacitateとThreat Analysisの持続時間をXs延長。'},
+    {n:'Nightmare Melody',b:'wand',desc:'（ワンドスキルがガントレットにも適用される場合あり）Sleep: Cursed NightmareをSleep: Nightmare Melodyに変化。'},
+    {n:'Sacred Magic Circle',b:'wand',desc:'（ワンドスキルがガントレットにも適用される場合あり）Corrupted Magic CircleをSacred Magic Circleに変化。'},
+    {n:'Curse Resonance',b:'wand',desc:'（ワンドスキルがガントレットにも適用される場合あり）射程内パーティメンバーがCurse DOT付与の敵を攻撃時、Dark ExplosionをX%確率で発動。'},
+  ]},
+  orb:{icon:'🔮',name:'Orb（オーブ）',sub:'支援型の魔法遠距離武器 — 20スキル',skills:[
+    {n:'Rift Fracture（亀裂破砕）',b:'gear',desc:'Interstellar ExplosionをRift Fractureに変化。攻撃範囲内の全Orbが1秒で崩壊。崩壊したOrb地点に5m範囲のエリアを生成。'},
+    {n:'Star Destroyer（星破壊者）',b:'gear',desc:'Star Destroyerのチャージ速度を増加。ターゲットへのダメージ時、X%の確率でWeaken: Voidを付与し毎秒基礎ダメージのX%+XダメージをXs間与える。'},
+    {n:"Nebula's Resonance（星雲の共鳴）",b:'gear',desc:"Restoring ConstellationをNebula's Resonanceに変化。味方1人にXs間5スタックのResonanceを付与。各スタックが基礎ダメージをX%増加。ダメージを与えるたびに1スタック消費。"},
+    {n:'Purifying Star（浄化の星）',b:'gear',desc:'Healing StarをPurifying Starに変化。指定パーティメンバーをXs間追うOrb: Purifying Starを召喚。4m範囲のパーティメンバーから0.5秒ごとに1つのCC効果を除去。'},
+    {n:'Stellar Ray（星光線）',b:'gear',desc:'Stellar DashをStellar Rayに変化。ターゲットと自分を6秒間リンクし、間のターゲット全員に0.5秒ごとに基礎ダメージのX%+Xダメージ。対モンスターダメージ増加あり。'},
+    {n:'Tectonic Shift（地殻変動）',b:'boss',desc:'Interstellar ExplosionをTectonic Shiftに変化。Orb1個消費し指定地点で1秒後に地殻変動。最大5体に基礎ダメージX%+Xダメージ。【FieldBossドロップ】'},
+    {n:"Star's Orbit（星の軌道）",b:'nix',desc:"Milky Wayのダメージをx%増加し、使用回数を1回追加する。"},
+    {n:'Guardian Constellation（守護星座）',b:'nix',desc:'Restoring Constellation効果が有効中、Skill Damage ResistanceをXs間X増加させる。'},
+    {n:'Healing Melody（癒しの旋律）',b:'nix',desc:'Healing Wave使用後にOrb Effectが発動した際、Healing Waveを1回再発動する。'},
+    {n:'Rift Fracture Enchantment',b:'enchant',desc:'Rift Fractureのエリアを1m拡大。'},
+    {n:'Star Destroyer Enchantment',b:'enchant',desc:'Weaken: Voidのダメージをx%増加。'},
+    {n:"Nebula's Resonance Enchantment（防御版）",b:'enchant',desc:'Defense SkillでFuryとWrath攻撃をブロックしてもResonanceスタックを消費しない効果を追加。'},
+    {n:"Nebula's Resonance Enchantment（持続版）",b:'enchant',desc:'全スタック消費によるNebula\'s Resonance効果終了時、Base Damage X%減少効果が適用されなくなる効果を追加。'},
+    {n:'Purifying Star Enchantment（回復版）',b:'enchant',desc:'Purifying StarでCC効果除去に成功した際、HP回復を追加（基礎ダメージのX%+α）。'},
+    {n:'Purifying Star Enchantment（ダメージ版）',b:'enchant',desc:'Purifying Starの持続時間中に範囲内にいる間、全種族へのダメージをX増加。'},
+    {n:'Stellar Ray Enchantment',b:'enchant',desc:'Stellar RayのPvPダメージをX%減少・対モンスターダメージをX%増加。Orb Effectも追加し、Stellar Ray使用中にOrbが存在する場合はStellar RayがOrbから放射される。'},
+    {n:'Healing Wave Enchantment',b:'enchant',desc:'Healing Wave回復量をX%増加。'},
+    {n:'Healing Star Enchantment',b:'enchant',desc:'Healing Starのパッシブ回復効果をX%増加。'},
+    {n:'Supernova Collapse Enchantment',b:'enchant',desc:'Supernova CollapseのCDをXs短縮。'},
+    {n:'Guardian Defensive Wall Enchantment',b:'enchant',desc:'Guardian Defensive WallのHPをX%増加。'},
+    {n:'Astral Overseer Enchantment',b:'enchant',desc:'Active SkillでOrb Effectが発動するたびにCritical Hit ChanceをX増加。Mastery「Celestial Guard」効果有効時にはShield HealthをX増加。'},
+    {n:'Pulsating Galaxy Enchantment',b:'enchant',desc:'Pulsating Galaxy効果有効中、Magic DamageをX%増加。'},
+  ]},
+};
+
+function P(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('on'));
+  const pg=document.getElementById('page-'+id);
+  if(pg)pg.classList.add('active');
+  const nv=document.getElementById('n-'+id);
+  if(nv)nv.classList.add('on');
+  window.scrollTo(0,0);
+}
+
+function W(code){
+  const w=WD[code];
+  if(!w)return;
+  document.getElementById('wdetail-hero').innerHTML=
+    '<div style="font-size:2.5rem;margin-bottom:.4rem;">'+w.icon+'</div>'+
+    '<div style="font-family:Orbitron,monospace;font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:.3rem;">'+w.name+'</div>'+
+    '<div style="font-size:13px;color:var(--t2);">'+w.sub+'</div>';
+  
+  const bc={base:'sb2',gear:'sg',enchant:'sb2',nix:'sn2',boss:'sr',wand:'sb2'};
+  const bl={base:'BASE',gear:'GEAR',enchant:'ENCHANT',nix:'NIX',boss:'BOSS DROP',wand:'WAND'};
+  const sc={base:'',gear:'',enchant:'',nix:'',boss:' red',wand:''};
+  
+  document.getElementById('wdetail-skills').innerHTML=w.skills.map(s=>{
+    const b=s.b||'base';
+    return '<div class="sk'+(sc[b]||'')+'"><div class="skn"><span class="sb '+(bc[b]||'sb2')+'">'+(bl[b]||'BASE')+'</span>'+s.n+'</div><div class="skd">'+s.desc+'</div></div>';
+  }).join('');
+  
+  P('wdetail');
+}
+</script>
+</body>
+</html>
